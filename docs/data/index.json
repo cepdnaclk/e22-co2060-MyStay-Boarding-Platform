@@ -24,32 +24,16 @@
     }
   ],
 
-  "tableOfContents": [
-    "Introduction",
-    "Solution Architecture",
-    "Software Designs",
-    "Testing",
-    "Conclusion",
-    "Links"
+    "supervisors": [
+    {
+      "name": "To be updated",
+      "email": "To be updated"
+    }
   ],
 
-  "sections": {
-    "Introduction": "Finding suitable boarding places is a major challenge for students and working professionals due to scattered information, lack of transparency, and limited accessibility. MyStay is a web-based platform designed to centralize boarding place information and simplify the search process. The system allows users to search, filter, and view boarding listings based on location, price, and availability, while enabling landlords to manage listings efficiently.",
+  "tags": ["Web", "Software Systems", "CO2060"],
 
-    "SolutionArchitecture": "The system follows a modular and scalable architecture where different components interact to provide a seamless user experience. It supports user roles such as tenants and landlords, secure authentication, listing management, and search functionality. The architecture is designed to ensure maintainability, reliability, and future scalability.",
-
-    "SoftwareDesigns": "The software design focuses on usability, responsiveness, and clean user interaction flows. Core screens include the homepage, search results, listing details, and authentication pages. The design follows best practices in UI/UX, ensuring accessibility and ease of navigation across different devices.",
-
-    "Testing": "Testing is conducted at multiple levels to ensure system reliability and correctness. This includes unit testing for core functionalities, integration testing for interconnected modules, and manual testing to validate user workflows and edge cases.",
-
-    "Conclusion": "MyStay provides an efficient and user-friendly solution for managing and discovering boarding places. By centralizing information and improving accessibility, the platform reduces the effort required to find suitable accommodation while offering landlords a structured way to manage listings.",
-
-    "Links": {
-      "ProjectRepository": "https://github.com/cepdnaclk/e22-co2060-MyStay-Boarding-Platform",
-    }
-  },
-
-  "organization": "Department of Computer Engineering",
-  "university": "University of Peradeniya"
+  "image": "To be updated",
+  "thumbnail": "To be updated"
 }
 
