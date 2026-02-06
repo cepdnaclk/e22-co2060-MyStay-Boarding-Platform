@@ -1,30 +1,30 @@
 {
-  "projectTitle": "MyStay – Boarding Place Finder Web Application",
+  "title": "MyStay – Boarding Place Finder Web Application",
 
   "team": [
     {
-      "eNumber": "E/22/120",
       "name": "A.S.V. Gunasiri",
-      "email": "e22120@eng.pdn.ac.lk"
+      "email": "e22120@eng.pdn.ac.lk",
+      "eNumber": "E/22/120"
     },
     {
-      "eNumber": "E/22/001",
       "name": "H.M.H.N. Aberathna",
-      "email": "e22001@eng.pdn.ac.lk"
+      "email": "e22001@eng.pdn.ac.lk",
+      "eNumber": "E/22/001"
     },
     {
-      "eNumber": "E/22/027",
       "name": "M.A.N.P. Anawarathne",
-      "email": "e22027@eng.pdn.ac.lk"
+      "email": "e22027@eng.pdn.ac.lk",
+      "eNumber": "E/22/027"
     },
     {
-      "eNumber": "E/22/324",
       "name": "P.H.D. Rathnasiri",
-      "email": "e22324@eng.pdn.ac.lk"
+      "email": "e22324@eng.pdn.ac.lk",
+      "eNumber": "E/22/324"
     }
   ],
 
-    "supervisors": [
+  "supervisors": [
     {
       "name": "To be updated",
       "email": "To be updated"
@@ -36,4 +36,5 @@
   "image": "To be updated",
   "thumbnail": "To be updated"
 }
+
 
