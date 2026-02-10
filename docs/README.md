@@ -18,7 +18,7 @@ If your followed all the given instructions correctly, your repository will be a
 A HTML template integrated with the given GitHub repository templates, based on github.com/cepdnaclk/eYY-project-theme . If you like to remove this default theme and make your own web page, you can remove the file, docs/_config.yml and create the site using HTML. -->
 
 # MyStay – Boarding Place Finder Web Application
-![Cover Page](https://via.placeholder.com/940x352.png?text=MyStay+Cover+Page)
+![Cover Page](./docs/images/WhatsApp Image 2026-02-07 at 19.27.15.jpeg)
 
 ## Team
 - E/22/120, A.S.V. Gunasiri, [e22120@eng.pdn.ac.lk](mailto:e22120@eng.pdn.ac.lk)
