@@ -65,20 +65,20 @@ app.use((req, res, next) => {
 // --- ROUTES ---
 const authRoutes = require('./routes/auth');
 const stayRoutes = require('./routes/stayRoutes');
-const reviewRoutes = require('./routes/reviewRoutes');
+const reviewRoutes = require('./routes/reviewRoutes'); // 1. Import your new review routes
+const bookingRoutes = require('./routes/bookingRoutes'); // 3. Import booking routes
 
 app.use('/api/auth', authRoutes);
 app.use('/api/stays', stayRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/api/reviews', reviewRoutes); // 2. Register the review endpoint
+app.use('/api/bookings', bookingRoutes); // 4. Register the booking endpoint
 
 // --- START SERVER ONLY WHEN RUNNING server.js DIRECTLY ---
 const PORT = process.env.PORT || 3000;
-
-if (require.main === module) {
+if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
         console.log(`🚀 MyStay Server running on http://localhost:${PORT}`);
     });
 }
 
-// --- EXPORT APP FOR JEST / SUPERTEST ---
-module.exports = app;
+module.exports = { app, pool };
