@@ -9,7 +9,7 @@ const app = express();
 
 // --- MIDDLEWARE ---
 app.use(cors({
-    origin: ['http://localhost:5174', 'http://localhost:5173'],
+    origin: ['http://localhost:5174', 'http://localhost:5173', 'http://localhost:8081'], // Added Expo web port
     credentials: true
 }));
 
