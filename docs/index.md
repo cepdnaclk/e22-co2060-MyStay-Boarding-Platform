@@ -37,7 +37,7 @@ Finding suitable boarding places is often difficult due to scattered information
 
 MyStay follows a modular and scalable architecture. The system supports multiple user roles (tenants and landlords), secure authentication, listing management, and search functionality. The architecture ensures maintainability, reliability, and future scalability.
 
-![Solution Architecture](./images/architecture.png)
+
 
 ---
 
@@ -45,7 +45,7 @@ MyStay follows a modular and scalable architecture. The system supports multiple
 
 The design focuses on usability, responsiveness, and clean user interaction flows. Core screens include the homepage, search results, listing details, and authentication pages. The platform follows UI/UX best practices, ensuring accessibility across devices.
 
-![UI Screenshots](./images/screenshots.png)
+
 
 ---
 
