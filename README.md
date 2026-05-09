@@ -27,8 +27,9 @@ MyStay is a web-based platform designed to help students and professionals find 
 2. [Solution Architecture](#solution-architecture)
 3. [Software Designs](#software-designs)
 4. [Testing](#testing)
-5. [Conclusion](#conclusion)
-6. [Links](#links)
+5. [Directory Structure](#directory-structure)
+6. [Conclusion](#conclusion)
+7. [Links](#links)
 
 ---
 
@@ -63,6 +64,26 @@ This project includes an automated test suite to validate core functionalities. 
 - Test cases are actively being developed
 - Expanded coverage and edge-case testing planned
 - Integration and end-to-end testing to be added in future updates
+
+---
+
+## Directory Structure
+```text
+📦 e22-co2060-MyStay-fork
+ ┣ 📂 code
+ ┃ ┣ 📂 backend          # Node.js backend server
+ ┃ ┣ 📂 DataBase         # Database scripts and schema
+ ┃ ┣ 📂 front_end        # React frontend web application
+ ┃ ┣ 📂 mobile_app       # React Native mobile application
+ ┃ ┣ 📜 docker-compose.yml
+ ┃ ┗ 📜 package.json
+ ┣ 📂 docs               # Project documentation and assets
+ ┃ ┣ 📂 data             # Images and data for docs
+ ┃ ┣ 📂 images           # Placeholder images for docs
+ ┃ ┣ 📜 index.md         # Main documentation page
+ ┃ ┗ 📜 README.md        # Docs specific README
+ ┗ 📜 README.md          # Project root README
+```
 
 ---
 

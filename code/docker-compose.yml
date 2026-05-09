@@ -3,16 +3,16 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./code/backend
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     env_file:
-      - ./code/backend/.env
+      - ./backend/.env
 
   frontend:
     build:
-      context: ./code/front_end
+      context: ./front_end
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
