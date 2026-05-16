@@ -7,7 +7,9 @@ title: MyStay – Boarding Place Finder Web Application
 
 # MyStay – Boarding Place Finder Web Application
 
-![Cover Page](./data/Cover_Page.png)
+<p align="center">
+  <img src="./data/coverpage.gif" alt="MyStay Demo Animation" width="800">
+</p>
 
 ## Team
 - E/22/120, A.S.V. Gunasiri, [e22120@eng.pdn.ac.lk](mailto:e22120@eng.pdn.ac.lk)
