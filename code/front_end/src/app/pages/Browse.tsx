@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Search, MapPin, DollarSign, Users, Star, SlidersHorizontal, X } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -21,7 +22,7 @@ export function Browse() {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/stays');
+        const response = await fetch(`${API_BASE_URL}/api/stays`);
         if (response.ok) {
           const data = await response.json();
           // Map backend fields to frontend expectations, using defaults for images/rating

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../../config';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Textarea } from './ui/textarea';
 
@@ -19,7 +20,7 @@ export function ReviewSection({ listingId, currentUser }: ReviewSectionProps) {
   const fetchReviews = async () => {
     if (!listingId) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/reviews/${listingId}`);
+      const res = await fetch(`${API_BASE_URL}/api/reviews/${listingId}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setReviews(data);
@@ -44,7 +45,7 @@ export function ReviewSection({ listingId, currentUser }: ReviewSectionProps) {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:3000/api/reviews/add', {
+      const res = await fetch(`${API_BASE_URL}/api/reviews/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
