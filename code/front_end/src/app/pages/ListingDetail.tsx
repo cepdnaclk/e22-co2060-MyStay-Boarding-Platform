@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
-import { MapPin, DollarSign, Users, Star, Phone, ArrowLeft, CheckCircle, MessageCircle } from 'lucide-react';
+import { MapPin, DollarSign, Users, Star, Phone, ArrowLeft, CheckCircle, MessageCircle, Calendar } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { ReviewSection } from '../components/ReviewSection';
@@ -25,6 +25,43 @@ export function ListingDetail() {
   const [isBooking, setIsBooking] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+
+  const handleBookNow = async () => {
+    if (!currentUser) {
+      alert("Please log in to book a listing.");
+      return;
+    }
+    
+    if (currentUser.role === 'landlord') {
+      alert("Landlords cannot book listings.");
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/bookings/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_id: currentUser.id,
+          listing_id: listing.stay_id || id
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert("Booking request submitted successfully! The landlord will review your request.");
+      } else {
+        alert(data.error || "Failed to submit booking request.");
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert("An error occurred while submitting your booking request.");
+    } finally {
+      setIsBooking(false);
+    }
+  };
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -58,37 +95,7 @@ export function ListingDetail() {
     }
   }, [id]);
 
-  const handleBook = async () => {
-    if (!currentUser) {
-      alert("Please login to book this place.");
-      return;
-    }
-    
-    setIsBooking(true);
-    try {
-      const response = await fetch(`http://localhost:3000/api/stays/${id}/book`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert("Booking successful!");
-        setListing({ ...listing, availability: 'Booked' });
-      } else {
-        alert(data.error || "Failed to book this place.");
-      }
-    } catch (error) {
-      console.error("Booking error:", error);
-      alert("An error occurred while booking.");
-    } finally {
-      setIsBooking(false);
-    }
-  };
+
 
   if (isLoading) {
     return (
@@ -293,16 +300,16 @@ export function ListingDetail() {
                     className="w-full gap-2 font-semibold" 
                     size="lg" 
                     style={{ 
-                      backgroundColor: listing.availability === 'Booked' ? '#ccc' : '#1a7a6e', 
+                      backgroundColor: listing.availability === 'Booked' || listing.availability === 'Not Available' ? '#ccc' : '#e07b39', 
                       color: 'white', 
                       border: 'none',
-                      cursor: listing.availability === 'Booked' ? 'not-allowed' : 'pointer'
+                      cursor: listing.availability === 'Booked' || listing.availability === 'Not Available' ? 'not-allowed' : 'pointer'
                     }}
-                    disabled={listing.availability === 'Booked' || isBooking}
-                    onClick={handleBook}
+                    onClick={handleBookNow}
+                    disabled={isBooking || listing.availability !== 'Available'}
                   >
-                    <CheckCircle className="w-4 h-4" />
-                    {isBooking ? 'Booking...' : listing.availability === 'Booked' ? 'Booked' : 'Book Now'}
+                    <Calendar className="w-4 h-4" />
+                    {isBooking ? 'Submitting...' : (listing.availability === 'Booked' || listing.availability === 'Not Available') ? 'Not Available' : 'Book Now'}
                   </Button>
                   <Button className="w-full gap-2 font-semibold" size="lg" style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}>
                     <Phone className="w-4 h-4" />
