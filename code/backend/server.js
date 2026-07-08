@@ -12,12 +12,23 @@ const allowedOrigins = [
     'http://localhost:5174', 
     'http://localhost:5173', 
     'http://localhost:8081',
-    'https://blue-wave-073e69e00.azurestaticapps.net', // Your live Azure Static Web App
-    process.env.FRONTEND_URL // Dynamic setting from Azure environment variables
+    process.env.FRONTEND_URL
 ].filter(Boolean);
 
 app.use(cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+        // Allow mobile app requests / direct server requests (no origin)
+        if (!origin) return callback(null, true);
+        
+        const isAllowed = allowedOrigins.includes(origin) || 
+                          origin.endsWith('.azurestaticapps.net');
+        
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(null, false);
+        }
+    },
     credentials: true
 }));
 
