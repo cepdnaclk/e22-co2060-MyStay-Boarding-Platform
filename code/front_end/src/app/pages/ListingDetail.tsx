@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
 import { MapPin, DollarSign, Users, Star, Phone, ArrowLeft, CheckCircle, MessageCircle, Calendar } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { API_BASE_URL } from '../../config';
 import { Card, CardContent } from '../components/ui/card';
 import { ReviewSection } from '../components/ReviewSection';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
@@ -39,7 +40,7 @@ export function ListingDetail() {
 
     setIsBooking(true);
     try {
-      const response = await fetch('http://localhost:3000/api/bookings/add', {
+      const response = await fetch(`${API_BASE_URL}/api/bookings/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -66,7 +67,7 @@ export function ListingDetail() {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/stays/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/stays/${id}`);
         if (response.ok) {
           const data = await response.json();
           setListing({

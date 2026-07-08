@@ -1,12 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, Image, SafeAreaView, Platform } from 'react-native';
-import { Search, MapPin, DollarSign, Users, Star } from 'lucide-react-native';
+import { Search, MapPin, DollarSign, Users, Star, User } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import api from '../services/api';
 
 export default function HomeScreen({ navigation }) {
   const [stays, setStays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkLoginStatus();
+    }, [])
+  );
+
+  const checkLoginStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const userData = await AsyncStorage.getItem('userData');
+      setIsLoggedIn(!!token);
+      if (userData) {
+        setUserRole(JSON.parse(userData).role);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     fetchStays();
@@ -95,10 +118,33 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* Header Area */}
-        <View style={styles.header}>
-          <Text style={styles.headerSubtitle}>EXPLORE</Text>
-          <Text style={styles.headerTitle}>Browse Boarding Places</Text>
-          <Text style={styles.headerDescription}>Find your perfect room near University of Peradeniya</Text>
+        <View style={[styles.header, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }]}>
+          <View>
+            <Text style={styles.headerSubtitle}>EXPLORE</Text>
+            <Text style={styles.headerTitle}>Browse Boarding Places</Text>
+            <Text style={styles.headerDescription}>Find your perfect room near University of Peradeniya</Text>
+          </View>
+          <TouchableOpacity 
+            style={{ padding: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 20 }}
+            onPress={() => {
+              if (isLoggedIn) {
+                if (userRole === 'landlord') {
+                  navigation.navigate('LandlordDashboard');
+                } else {
+                  // For student, maybe a simple profile alert or a screen if we had one
+                  // For now, logout option
+                  AsyncStorage.removeItem('userToken');
+                  AsyncStorage.removeItem('userData');
+                  setIsLoggedIn(false);
+                  setUserRole(null);
+                }
+              } else {
+                navigation.navigate('Login');
+              }
+            }}
+          >
+            <User size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
 
         {/* Search Bar */}

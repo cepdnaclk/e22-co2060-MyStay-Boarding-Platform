@@ -12,6 +12,8 @@ const customIcon = new Icon({
     iconAnchor: [19, 38], // Anchors the tip of the icon to the coordinate
 });
 
+import { API_BASE_URL } from '../../config';
+
 interface Stay {
     stay_id: number;
     title: string;
@@ -38,7 +40,7 @@ export function StaysMap() {
                     return;
                 }
 
-                const response = await fetch('http://localhost:3000/api/stays', {
+                const response = await fetch(`${API_BASE_URL}/api/stays`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,

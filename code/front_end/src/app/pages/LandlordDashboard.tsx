@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { API_BASE_URL } from '../../config';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
@@ -42,7 +43,7 @@ export function LandlordDashboard() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/stays', {
+      const response = await fetch(`${API_BASE_URL}/api/stays`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,7 +77,7 @@ export function LandlordDashboard() {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (!user.id) return;
       
-      const response = await fetch(`http://localhost:3000/api/bookings/landlord/${user.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/bookings/landlord/${user.id}`);
       if (response.ok) {
         const data = await response.json();
         setBookings(data);
@@ -158,7 +159,7 @@ export function LandlordDashboard() {
             formData.append('image', imageFile);
         }
 
-        const response = await fetch(`http://localhost:3000/api/stays/${editingId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/stays/${editingId}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -199,7 +200,7 @@ export function LandlordDashboard() {
             formData.append('image', imageFile);
         }
 
-        const response = await fetch('http://localhost:3000/api/stays', {
+        const response = await fetch(`${API_BASE_URL}/api/stays`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -226,7 +227,7 @@ export function LandlordDashboard() {
     if (confirm('Are you sure you want to delete this listing?')) {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/stays/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/stays/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -248,7 +249,7 @@ export function LandlordDashboard() {
 
   const handleUpdateBookingStatus = async (requestId: number, status: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/bookings/${requestId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/bookings/${requestId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
