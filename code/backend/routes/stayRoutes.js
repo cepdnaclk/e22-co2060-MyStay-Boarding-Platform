@@ -45,6 +45,27 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET stays for the authenticated landlord - SECURE
+router.get('/landlord/my-listings', protect, async (req, res) => {
+    const pool = req.pool;
+    const landlord_id = req.user.id;
+    try {
+        console.log(`Fetching stays uploaded by landlord ID: ${landlord_id}`);
+        const [rows] = await pool.query('SELECT * FROM Stays WHERE landlord_id = ?', [landlord_id]);
+
+        const formattedRows = rows.map(stay => ({
+            ...stay,
+            latitude: parseFloat(stay.latitude),
+            longitude: parseFloat(stay.longitude)
+        }));
+
+        res.json(formattedRows);
+    } catch (err) {
+        console.error("Database Error:", err.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 // GET single boarding place - PUBLIC
 router.get('/:id', async (req, res) => {
     const pool = req.pool;

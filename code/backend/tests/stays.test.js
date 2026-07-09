@@ -33,4 +33,10 @@ describe('Stay API Tests', () => {
     expect(res.statusCode).toBeGreaterThanOrEqual(400);
   });
 
+  // ❌ Unauthorized landlord listings
+  test('GET /api/stays/landlord/my-listings without authentication should fail', async () => {
+    const res = await request(app).get('/api/stays/landlord/my-listings');
+    expect(res.statusCode).toBe(401);
+  });
+
 });
