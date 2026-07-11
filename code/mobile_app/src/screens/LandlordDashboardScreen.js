@@ -21,7 +21,7 @@ export default function LandlordDashboardScreen({ navigation }) {
         const user = JSON.parse(userDataStr);
         
         // Fetch listings
-        const listingsRes = await api.get('/stays');
+        const listingsRes = await api.get('/stays/landlord/my-listings');
         setListings(listingsRes.data || []);
         
         // Fetch bookings

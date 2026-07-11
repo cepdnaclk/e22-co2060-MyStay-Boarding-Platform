@@ -82,7 +82,8 @@ export function ListingDetail() {
             roomType: data.roomType || 'Single',
             gender: data.gender || 'Any',
             landlordName: data.landlordName || 'Unknown Landlord',
-            landlordContact: data.landlordContact || 'No contact info'
+            landlordContact: data.landlordContact || 'No contact info',
+            landlordPhone: data.landlordPhone || 'No phone number'
           });
         }
       } catch (error) {
@@ -293,6 +294,9 @@ export function ListingDetail() {
                   <div>
                     <p className="font-semibold" style={{ color: '#0d1f1d' }}>{listing.landlordName}</p>
                     <p className="text-sm" style={{ color: '#5a7874' }}>{listing.landlordContact}</p>
+                    {listing.landlordPhone && listing.landlordPhone !== 'No phone number' && (
+                      <p className="text-xs font-semibold mt-0.5" style={{ color: '#1a7a6e' }}>{listing.landlordPhone}</p>
+                    )}
                   </div>
                 </div>
 
@@ -312,7 +316,18 @@ export function ListingDetail() {
                     <Calendar className="w-4 h-4" />
                     {isBooking ? 'Submitting...' : (listing.availability === 'Booked' || listing.availability === 'Not Available') ? 'Not Available' : 'Book Now'}
                   </Button>
-                  <Button className="w-full gap-2 font-semibold" size="lg" style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}>
+                  <Button 
+                    className="w-full gap-2 font-semibold" 
+                    size="lg" 
+                    style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}
+                    onClick={() => {
+                      if (listing.landlordPhone && listing.landlordPhone !== 'No phone number') {
+                        window.location.href = `tel:${listing.landlordPhone}`;
+                      } else {
+                        alert("No phone number available for this landlord.");
+                      }
+                    }}
+                  >
                     <Phone className="w-4 h-4" />
                     Call Now
                   </Button>

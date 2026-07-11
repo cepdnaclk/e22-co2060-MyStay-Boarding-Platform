@@ -29,8 +29,17 @@ jobs:
         id: idtoken
         with:
            script: |
-               const coredemo = require('@actions/core')
-               return await coredemo.getIDToken()
+               if (!process.env.ACTIONS_ID_TOKEN_REQUEST_URL) {
+                 console.log("ACTIONS_ID_TOKEN_REQUEST_URL is not set. Skipping ID Token generation.");
+                 return "";
+               }
+               try {
+                 const coredemo = require('@actions/core')
+                 return await coredemo.getIDToken()
+               } catch (err) {
+                 console.log("OIDC token request failed: " + err.message);
+                 return "";
+               }
            result-encoding: string
       - name: Build And Deploy
         id: builddeploy
