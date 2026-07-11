@@ -39,7 +39,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_13C5D3EE78B049D7AEF46CAA9441E151 != '' }}
     
     steps:
       - name: Download artifact from build job
@@ -49,6 +48,7 @@ jobs:
       
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
+        if: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_13C5D3EE78B049D7AEF46CAA9441E151 != '' }}
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'mystay-backend'
