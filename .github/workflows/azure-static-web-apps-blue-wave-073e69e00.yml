@@ -7,6 +7,15 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
       - main
 
 jobs:
@@ -17,6 +26,8 @@ jobs:
     permissions:
        id-token: write
        contents: read
+    env:
+       AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_WAVE_073E69E00 }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -43,10 +54,10 @@ jobs:
            result-encoding: string
       - name: Build And Deploy
         id: builddeploy
-        if: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_WAVE_073E69E00 != '' }}
+        if: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN != '' }}
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_WAVE_073E69E00 }}
+          azure_static_web_apps_api_token: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
@@ -62,10 +73,13 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
+    env:
+       AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_WAVE_073E69E00 }}
     steps:
       - name: Close Pull Request
         id: closepullrequest
-        if: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BLUE_WAVE_073E69E00 != '' }}
+        if: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN != '' }}
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+          azure_static_web_apps_api_token: ${{ env.AZURE_STATIC_WEB_APPS_API_TOKEN }}
