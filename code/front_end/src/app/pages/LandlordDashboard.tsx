@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle, Phone } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { API_BASE_URL } from '../../config';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -514,7 +514,15 @@ export function LandlordDashboard() {
                           <tr key={booking.request_id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-6 py-4 font-medium" style={{ color: '#0d1f1d' }}>{booking.student_name}</td>
                             <td className="px-6 py-4 text-gray-600">
-                              <div>{booking.student_phone}</div>
+                              <div>
+                                <a 
+                                  href={`tel:${booking.student_phone}`} 
+                                  className="hover:underline text-teal-600 inline-flex items-center gap-1 font-medium"
+                                  title="Call Student"
+                                >
+                                  <Phone className="w-3 h-3 text-teal-500" /> {booking.student_phone}
+                                </a>
+                              </div>
                               <div className="text-xs text-gray-500">{booking.student_email}</div>
                             </td>
                             <td className="px-6 py-4" style={{ color: '#1a7a6e' }}>{booking.title}</td>
