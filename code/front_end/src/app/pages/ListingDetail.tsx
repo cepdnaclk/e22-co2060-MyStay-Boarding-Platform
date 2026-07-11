@@ -316,21 +316,25 @@ export function ListingDetail() {
                     <Calendar className="w-4 h-4" />
                     {isBooking ? 'Submitting...' : (listing.availability === 'Booked' || listing.availability === 'Not Available') ? 'Not Available' : 'Book Now'}
                   </Button>
-                  <Button 
-                    className="w-full gap-2 font-semibold" 
-                    size="lg" 
-                    style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}
-                    onClick={() => {
-                      if (listing.landlordPhone && listing.landlordPhone !== 'No phone number') {
-                        window.location.href = `tel:${listing.landlordPhone}`;
-                      } else {
+                  <a 
+                    href={listing.landlordPhone && listing.landlordPhone !== 'No phone number' ? `tel:${listing.landlordPhone}` : '#'}
+                    onClick={(e) => {
+                      if (!listing.landlordPhone || listing.landlordPhone === 'No phone number') {
+                        e.preventDefault();
                         alert("No phone number available for this landlord.");
                       }
                     }}
+                    className="w-full block"
                   >
-                    <Phone className="w-4 h-4" />
-                    Call Now
-                  </Button>
+                    <Button 
+                      className="w-full gap-2 font-semibold" 
+                      size="lg" 
+                      style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}
+                    >
+                      <Phone className="w-4 h-4" />
+                      Call Now
+                    </Button>
+                  </a>
                   <Button variant="outline" className="w-full gap-2 font-medium" size="lg" style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}>
                     <MessageCircle className="w-4 h-4" />
                     Send Message
