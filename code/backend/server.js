@@ -86,11 +86,13 @@ const authRoutes = require('./routes/auth');
 const stayRoutes = require('./routes/stayRoutes');
 const reviewRoutes = require('./routes/reviewRoutes'); // 1. Import your new review routes
 const bookingRoutes = require('./routes/bookingRoutes'); // 3. Import booking routes
+const messageRoutes = require('./routes/messageRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/stays', stayRoutes);
 app.use('/api/reviews', reviewRoutes); // 2. Register the review endpoint
 app.use('/api/bookings', bookingRoutes); // 4. Register the booking endpoint
+app.use('/api/messages', messageRoutes);
 
 // --- START SERVER ONLY WHEN RUNNING server.js DIRECTLY ---
 const PORT = process.env.PORT || 3000;

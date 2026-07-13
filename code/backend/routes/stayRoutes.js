@@ -235,13 +235,10 @@ router.post('/:id/book', protect, async (req, res) => {
         // 2. Insert into Booking_Requests table
         await pool.query(
             'INSERT INTO Booking_Requests (student_id, listing_id, status) VALUES (?, ?, ?)',
-            [studentId, stayId, 'approved'] // Setting to approved immediately as per requirements
+            [studentId, stayId, 'pending']
         );
 
-        // 3. Update the Stays table availability to 'Booked'
-        await pool.query('UPDATE Stays SET availability = ? WHERE stay_id = ?', ['Booked', stayId]);
-
-        res.json({ message: "Booking successful!" });
+        res.json({ message: "Booking request submitted successfully!" });
     } catch (err) {
         console.error("Booking Error:", err);
         res.status(500).json({ error: "Server error while processing booking" });

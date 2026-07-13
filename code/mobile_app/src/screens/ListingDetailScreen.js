@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Image, SafeAreaView, Dimensions } from 'react-native';
-import { MapPin, DollarSign, Users, CheckCircle2, ChevronLeft, Map } from 'lucide-react-native';
+import { Linking, View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { MapPin, DollarSign, Users, CheckCircle2, ChevronLeft, Map, Phone, Mail, MessageSquare } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 
 const { width } = Dimensions.get('window');
@@ -22,6 +23,34 @@ export default function ListingDetailScreen({ route, navigation }) {
       console.error('Error fetching stay details:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCallNow = () => {
+    if (stay && stay.landlordPhone && stay.landlordPhone !== 'No phone number') {
+      Linking.openURL(`tel:${stay.landlordPhone}`).catch(err => {
+        console.error("Failed to open dialer:", err);
+        alert("Unable to open the phone dialer.");
+      });
+    } else {
+      alert("No phone number available for this landlord.");
+    }
+  };
+
+  const handleSendMessage = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        alert("Please log in to send a message.");
+        navigation.navigate('Login');
+        return;
+      }
+      navigation.navigate('Chat', { 
+        receiverId: stay.landlord_id, 
+        receiverName: stay.landlordName || 'Landlord' 
+      });
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -114,6 +143,55 @@ export default function ListingDetailScreen({ route, navigation }) {
             </View>
           )}
 
+          {/* Contact Landlord */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Contact Landlord</Text>
+            <View style={styles.landlordCard}>
+              <View style={styles.landlordHeader}>
+                <View style={styles.landlordAvatar}>
+                  <Text style={styles.landlordAvatarText}>
+                    {stay.landlordName ? stay.landlordName.charAt(0).toUpperCase() : 'U'}
+                  </Text>
+                </View>
+                <View style={styles.landlordInfo}>
+                  <Text style={styles.landlordNameText}>{stay.landlordName || 'Unknown Landlord'}</Text>
+                  <Text style={styles.landlordRoleText}>Landlord</Text>
+                </View>
+              </View>
+
+              <View style={styles.landlordContactDetails}>
+                <View style={styles.contactRow}>
+                  <Mail size={16} color="#5a7874" style={{ marginRight: 8 }} />
+                  <Text style={styles.contactText}>{stay.landlordContact || 'No contact info'}</Text>
+                </View>
+                {stay.landlordPhone && stay.landlordPhone !== 'No phone number' && (
+                  <View style={styles.contactRow}>
+                    <Phone size={16} color="#1a7a6e" style={{ marginRight: 8 }} />
+                    <Text style={styles.contactText}>{stay.landlordPhone}</Text>
+                  </View>
+                )}
+              </View>
+
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+                <TouchableOpacity 
+                  style={[styles.landlordCallButton, { flex: 1 }]}
+                  onPress={handleCallNow}
+                >
+                  <Phone size={16} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.landlordCallButtonText}>Call Now</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.landlordMessageButton}
+                  onPress={handleSendMessage}
+                >
+                  <MessageSquare size={16} color="#1a7a6e" style={{ marginRight: 8 }} />
+                  <Text style={styles.landlordMessageButtonText}>Message</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
           {/* Location / Map Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Location</Text>
@@ -132,15 +210,25 @@ export default function ListingDetailScreen({ route, navigation }) {
           <Text style={styles.priceAmount}>Rs. {stay.price}</Text>
           <Text style={styles.priceLabel}>month</Text>
         </View>
-        <TouchableOpacity 
-          style={[styles.bookButton, stay.availability !== 'Available' && styles.bookButtonDisabled]}
-          disabled={stay.availability !== 'Available'}
-          onPress={() => alert('Booking functionality coming soon!')}
-        >
-          <Text style={styles.bookButtonText}>
-            {stay.availability === 'Available' ? 'Book Now' : 'Occupied'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.bottomActions}>
+          {stay.landlordPhone && stay.landlordPhone !== 'No phone number' && (
+            <TouchableOpacity 
+              style={styles.bottomCallButton}
+              onPress={handleCallNow}
+            >
+              <Phone size={20} color="#1a7a6e" />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity 
+            style={[styles.bookButton, stay.availability !== 'Available' && styles.bookButtonDisabled]}
+            disabled={stay.availability !== 'Available'}
+            onPress={() => alert('Booking functionality coming soon!')}
+          >
+            <Text style={styles.bookButtonText}>
+              {stay.availability === 'Available' ? 'Book Now' : 'Occupied'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -336,6 +424,101 @@ const styles = StyleSheet.create({
   bookButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  landlordCard: {
+    backgroundColor: '#f7fafa',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(26,122,110,0.1)',
+  },
+  landlordHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  landlordAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#1a7a6e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  landlordAvatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  landlordInfo: {
+    flex: 1,
+  },
+  landlordNameText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0d1f1d',
+  },
+  landlordRoleText: {
+    fontSize: 13,
+    color: '#5a7874',
+    marginTop: 2,
+  },
+  landlordContactDetails: {
+    marginBottom: 16,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  contactText: {
+    fontSize: 14,
+    color: '#3d5a57',
+  },
+  landlordCallButton: {
+    backgroundColor: '#1a7a6e',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  landlordCallButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  bottomActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  bottomCallButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#1a7a6e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e8f5f3',
+  },
+  landlordMessageButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#1a7a6e',
+    backgroundColor: '#e8f5f3',
+  },
+  landlordMessageButtonText: {
+    color: '#1a7a6e',
+    fontSize: 15,
     fontWeight: 'bold',
   },
 });
