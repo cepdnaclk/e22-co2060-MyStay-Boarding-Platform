@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Linking, View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { MapPin, DollarSign, Users, CheckCircle2, ChevronLeft, Map, Phone, Mail } from 'lucide-react-native';
+import { MapPin, DollarSign, Users, CheckCircle2, ChevronLeft, Map, Phone, Mail, MessageSquare } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 
 const { width } = Dimensions.get('window');
@@ -33,6 +34,23 @@ export default function ListingDetailScreen({ route, navigation }) {
       });
     } else {
       alert("No phone number available for this landlord.");
+    }
+  };
+
+  const handleSendMessage = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        alert("Please log in to send a message.");
+        navigation.navigate('Login');
+        return;
+      }
+      navigation.navigate('Chat', { 
+        receiverId: stay.landlord_id, 
+        receiverName: stay.landlordName || 'Landlord' 
+      });
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -154,13 +172,23 @@ export default function ListingDetailScreen({ route, navigation }) {
                 )}
               </View>
 
-              <TouchableOpacity 
-                style={styles.landlordCallButton}
-                onPress={handleCallNow}
-              >
-                <Phone size={16} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.landlordCallButtonText}>Call Now</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+                <TouchableOpacity 
+                  style={[styles.landlordCallButton, { flex: 1 }]}
+                  onPress={handleCallNow}
+                >
+                  <Phone size={16} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.landlordCallButtonText}>Call Now</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.landlordMessageButton}
+                  onPress={handleSendMessage}
+                >
+                  <MessageSquare size={16} color="#1a7a6e" style={{ marginRight: 8 }} />
+                  <Text style={styles.landlordMessageButtonText}>Message</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -476,5 +504,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#e8f5f3',
+  },
+  landlordMessageButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#1a7a6e',
+    backgroundColor: '#e8f5f3',
+  },
+  landlordMessageButtonText: {
+    color: '#1a7a6e',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
 });
