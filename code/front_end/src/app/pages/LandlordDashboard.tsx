@@ -259,6 +259,7 @@ export function LandlordDashboard() {
       if (response.ok) {
         alert(`Booking ${status} successfully!`);
         fetchBookings(); // Refresh the bookings list
+        fetchListings(); // Refresh the listings list
       } else {
         const data = await response.json();
         alert(data.error || "Failed to update booking status.");
