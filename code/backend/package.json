@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test": "jest"
+    "start": "node server.js",
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

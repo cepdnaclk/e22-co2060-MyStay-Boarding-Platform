@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle, Phone } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle, Phone, MessageSquare, Mail } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { API_BASE_URL } from '../../config';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -34,11 +34,16 @@ function LocationPicker({ position, setPosition }: { position: { lat: number, ln
 export function LandlordDashboard() {
   const [listings, setListings] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'bookings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'bookings' | 'messages'>('overview');
+
+  const [replyingMessageId, setReplyingMessageId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   const fetchListings = async () => {
     setIsLoading(true);
@@ -88,9 +93,55 @@ export function LandlordDashboard() {
     }
   };
 
+  const fetchMessages = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.id) return;
+      
+      const response = await fetch(`${API_BASE_URL}/api/messages/landlord/${user.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
+
+  const handleSendReply = async (messageId: number) => {
+    if (!replyText.trim()) {
+      alert("Please enter a reply.");
+      return;
+    }
+    setIsSubmittingReply(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}/reply`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply_text: replyText.trim() })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Reply sent successfully!");
+        setReplyingMessageId(null);
+        setReplyText('');
+        fetchMessages();
+      } else {
+        alert(data.error || "Failed to send reply.");
+      }
+    } catch (error) {
+      console.error("Failed to send reply:", error);
+      alert("An error occurred while sending the reply.");
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
   useEffect(() => {
     fetchListings();
     fetchBookings();
+    fetchMessages();
   }, []);
 
   const defaultListing = {
@@ -274,6 +325,7 @@ export function LandlordDashboard() {
     { label: 'Total Listings', value: listings.length, icon: Home, color: '#1a7a6e', bg: '#e8f5f3' },
     { label: 'Available', value: listings.filter((l) => l.availability === 'Available').length, icon: TrendingUp, color: '#52b788', bg: '#d8f3dc' },
     { label: 'Pending Bookings', value: bookings.filter((b) => b.status === 'pending').length, icon: Calendar, color: '#e07b39', bg: '#fdf0e8' },
+    { label: 'Messages', value: messages.length, icon: MessageSquare, color: '#1a7a6e', bg: '#e8f5f3' },
   ];
 
   return (
@@ -443,6 +495,17 @@ export function LandlordDashboard() {
           >
             Booking Requests ({bookings.length})
           </button>
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`pb-3 px-6 text-sm font-semibold border-b-2 transition-all duration-200 ${
+              activeTab === 'messages'
+                ? 'text-teal-700 font-bold border-teal-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            style={activeTab === 'messages' ? { borderColor: '#1a7a6e', color: '#1a7a6e' } : {}}
+          >
+            Messages ({messages.length})
+          </button>
         </div>
 
         {/* Overview Tab Content */}
@@ -568,6 +631,107 @@ export function LandlordDashboard() {
                 </div>
                 <h3 className="font-semibold mb-1" style={{ color: '#0d1f1d' }}>No bookings yet</h3>
                 <p className="text-sm" style={{ color: '#5a7874' }}>Any requests made by students will appear here.</p>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Messages Tab Content */}
+        {activeTab === 'messages' && (
+          <div>
+            {messages.length > 0 ? (
+              <div className="space-y-4">
+                {messages.map((msg) => (
+                  <Card key={msg.message_id} className="shadow-sm border-0" style={{ border: '1px solid rgba(26,122,110,0.1)' }}>
+                    <CardContent className="pt-5 pb-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-white flex-shrink-0" style={{ backgroundColor: '#1a7a6e' }}>
+                            {msg.sender_name ? msg.sender_name.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-base" style={{ color: '#0d1f1d' }}>{msg.sender_name}</h3>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                              <span className="flex items-center gap-1"><Mail className="w-3 h-3 text-teal-600" /> {msg.sender_email}</span>
+                              {msg.stay_title && (
+                                <span className="font-medium px-2 py-0.5 rounded" style={{ backgroundColor: '#e8f5f3', color: '#1a7a6e' }}>
+                                  Listing: {msg.stay_title}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-400 flex-shrink-0">
+                          {new Date(msg.created_at).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="p-4 rounded-xl text-sm leading-relaxed mb-3" style={{ backgroundColor: '#f7fafa', border: '1px solid rgba(26,122,110,0.08)', color: '#2b3e3c' }}>
+                        {msg.message}
+                      </div>
+
+                      {/* Display Reply or Reply Input */}
+                      {msg.reply_text ? (
+                        <div className="p-4 rounded-xl text-sm leading-relaxed mt-3" style={{ backgroundColor: '#e8f5f3', border: '1px solid rgba(26,122,110,0.2)' }}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-xs text-teal-800 uppercase tracking-wider">Your Reply</span>
+                            {msg.replied_at && (
+                              <span className="text-[11px] text-teal-600">{new Date(msg.replied_at).toLocaleString()}</span>
+                            )}
+                          </div>
+                          <p className="text-gray-800">{msg.reply_text}</p>
+                        </div>
+                      ) : replyingMessageId === msg.message_id ? (
+                        <div className="mt-3 space-y-2">
+                          <Textarea
+                            placeholder="Type your reply here..."
+                            rows={3}
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            className="w-full text-sm"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setReplyingMessageId(null); setReplyText(''); }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}
+                              onClick={() => handleSendReply(msg.message_id)}
+                              disabled={isSubmittingReply || !replyText.trim()}
+                            >
+                              {isSubmittingReply ? 'Sending...' : 'Send Reply'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-3 flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs"
+                            style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}
+                            onClick={() => { setReplyingMessageId(msg.message_id); setReplyText(''); }}
+                          >
+                            Reply to Student
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="shadow-sm border-0 p-16 text-center" style={{ border: '1px solid rgba(26,122,110,0.1)' }}>
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#e8f5f3' }}>
+                  <MessageSquare className="w-8 h-8" style={{ color: '#1a7a6e' }} />
+                </div>
+                <h3 className="font-semibold mb-1" style={{ color: '#0d1f1d' }}>No messages yet</h3>
+                <p className="text-sm" style={{ color: '#5a7874' }}>Messages sent by students inquiring about your listings will appear here.</p>
               </Card>
             )}
           </div>

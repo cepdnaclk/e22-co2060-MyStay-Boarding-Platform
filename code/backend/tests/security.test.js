@@ -2,9 +2,6 @@ const request = require('supertest');
 const { app, pool } = require('../server');
 
 describe('Security Tests', () => {
-  afterAll(async () => {
-    await pool.end();
-  });
 
   // ❌ SQL Injection
   test('SQL Injection attempt should fail', async () => {
