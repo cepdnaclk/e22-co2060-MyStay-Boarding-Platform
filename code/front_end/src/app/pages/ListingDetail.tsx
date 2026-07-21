@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
-import { MapPin, DollarSign, Users, Star, Phone, ArrowLeft, CheckCircle, MessageCircle, Calendar } from 'lucide-react';
+import { MapPin, DollarSign, Users, Star, Phone, ArrowLeft, CheckCircle, MessageCircle, Calendar, Send } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { API_BASE_URL } from '../../config';
 import { Card, CardContent } from '../components/ui/card';
 import { ReviewSection } from '../components/ReviewSection';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { Textarea } from '../components/ui/textarea';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -25,7 +27,72 @@ export function ListingDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
 
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [messageThread, setMessageThread] = useState<any[]>([]);
+
   const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+
+  const fetchThread = async () => {
+    if (!currentUser || !id) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/messages/thread?sender_id=${currentUser.id}&stay_id=${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessageThread(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch message thread:', error);
+    }
+  };
+
+  const handleOpenMessageModal = () => {
+    if (!currentUser) {
+      alert("Please log in to send a message to the landlord.");
+      return;
+    }
+    if (listing && currentUser.id === listing.landlord_id) {
+      alert("You cannot send a message to yourself.");
+      return;
+    }
+    fetchThread();
+    setIsMessageOpen(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) {
+      alert("Please enter a message.");
+      return;
+    }
+    setIsSendingMessage(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/messages/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender_id: currentUser.id,
+          receiver_id: listing.landlord_id,
+          stay_id: listing.stay_id || id,
+          message: messageText.trim()
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Message sent to the landlord successfully!");
+        setMessageText('');
+        fetchThread();
+      } else {
+        alert(data.error || "Failed to send message.");
+      }
+    } catch (error) {
+      console.error('Send message error:', error);
+      alert("An error occurred while sending your message.");
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
 
   const handleBookNow = async () => {
     if (!currentUser) {
@@ -331,7 +398,13 @@ export function ListingDetail() {
                     <Phone className="w-4 h-4" />
                     Call Now
                   </Button>
-                  <Button variant="outline" className="w-full gap-2 font-medium" size="lg" style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}>
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 font-medium"
+                    size="lg"
+                    style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}
+                    onClick={handleOpenMessageModal}
+                  >
                     <MessageCircle className="w-4 h-4" />
                     Send Message
                   </Button>
@@ -348,6 +421,80 @@ export function ListingDetail() {
 
         </div>
       </div>
+
+      {/* Message Modal */}
+      <Dialog open={isMessageOpen} onOpenChange={setIsMessageOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto bg-white">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: "'DM Serif Display', serif", fontSize: '22px', fontWeight: 400, color: '#0d1f1d' }}>
+              Messages with {listing?.landlordName}
+            </DialogTitle>
+            <DialogDescription style={{ color: '#5a7874' }}>
+              Inquire about "{listing?.title}".
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Message Thread History */}
+          {messageThread.length > 0 && (
+            <div className="space-y-3 my-2 max-h-[300px] overflow-y-auto p-3 rounded-xl bg-gray-50 border border-gray-100">
+              {messageThread.map((msg) => (
+                <div key={msg.message_id} className="space-y-2">
+                  {/* Student message */}
+                  <div className="p-3 rounded-xl bg-teal-50 border border-teal-100 text-sm">
+                    <div className="flex items-center justify-between text-xs text-teal-800 font-semibold mb-1">
+                      <span>You</span>
+                      <span className="text-[10px] font-normal text-gray-500">{new Date(msg.created_at).toLocaleString()}</span>
+                    </div>
+                    <p className="text-gray-800">{msg.message}</p>
+                  </div>
+
+                  {/* Landlord reply */}
+                  {msg.reply_text ? (
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm ml-4">
+                      <div className="flex items-center justify-between text-xs text-amber-900 font-semibold mb-1">
+                        <span>{msg.landlord_name || 'Landlord'} (Reply)</span>
+                        {msg.replied_at && (
+                          <span className="text-[10px] font-normal text-amber-700">{new Date(msg.replied_at).toLocaleString()}</span>
+                        )}
+                      </div>
+                      <p className="text-gray-900">{msg.reply_text}</p>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-gray-400 italic ml-4">
+                      Waiting for landlord's reply...
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-3 pt-2">
+            <div>
+              <label className="block text-xs font-semibold mb-1" style={{ color: '#0d1f1d' }}>
+                {messageThread.length > 0 ? 'Send Follow-up Message' : 'Your Message'}
+              </label>
+              <Textarea
+                placeholder="Ask about availability, rules, utilities, or visit schedule..."
+                rows={3}
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                className="w-full text-sm"
+              />
+            </div>
+
+            <Button
+              className="w-full gap-2 font-semibold"
+              style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}
+              onClick={handleSendMessage}
+              disabled={isSendingMessage || !messageText.trim()}
+            >
+              <Send className="w-4 h-4" />
+              {isSendingMessage ? 'Sending...' : 'Send Message'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
