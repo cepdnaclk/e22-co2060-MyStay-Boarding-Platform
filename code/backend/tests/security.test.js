@@ -1,10 +1,10 @@
 const request = require('supertest');
-const { app, pool } = require('../server');
+const { app } = require('../server');
 
 describe('Security Tests', () => {
 
-  // ❌ SQL Injection
-  test('SQL Injection attempt should fail', async () => {
+  // SQL Injection attempt in login
+  test('SQL Injection attempt should not bypass authentication', async () => {
     const res = await request(app)
       .post('/api/auth/login')
       .send({
@@ -12,18 +12,23 @@ describe('Security Tests', () => {
         password: "123"
       });
 
-    expect(res.statusCode).toBeGreaterThanOrEqual(400);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('Invalid email or password');
+    expect(res.body).not.toHaveProperty('token');
   });
 
-  // ❌ XSS Attack
-  test('XSS input should not be accepted', async () => {
+  // Protected endpoint should reject unauthenticated malicious input
+  test('Unauthenticated request containing script input should be rejected', async () => {
     const res = await request(app)
       .post('/api/stays')
       .send({
         title: "<script>alert('xss')</script>"
       });
 
-    expect(res.statusCode).toBeGreaterThanOrEqual(400);
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('Not authorized, no token');
   });
 
 });

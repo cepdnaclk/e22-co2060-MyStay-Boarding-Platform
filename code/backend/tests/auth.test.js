@@ -1,9 +1,9 @@
 const request = require('supertest');
-const { app, pool } = require('../server');
+const { app } = require('../server');
 
 describe('Authentication Tests', () => {
 
-  // ❌ Invalid login
+  // Invalid login
   test('Login with wrong credentials should fail', async () => {
     const res = await request(app)
       .post('/api/auth/login')
@@ -12,10 +12,12 @@ describe('Authentication Tests', () => {
         password: 'wrong'
       });
 
-    expect(res.statusCode).toBeGreaterThanOrEqual(400);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('Invalid email or password');
   });
 
-  // ❌ Empty input
+  // Empty login fields
   test('Login with empty fields should fail', async () => {
     const res = await request(app)
       .post('/api/auth/login')
@@ -24,10 +26,12 @@ describe('Authentication Tests', () => {
         password: ''
       });
 
-    expect(res.statusCode).toBeGreaterThanOrEqual(400);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('Invalid email or password');
   });
 
-  // ❌ Missing password
+  // Missing password
   test('Login with missing password should fail', async () => {
     const res = await request(app)
       .post('/api/auth/login')
@@ -35,7 +39,38 @@ describe('Authentication Tests', () => {
         email: 'test@gmail.com'
       });
 
-    expect(res.statusCode).toBeGreaterThanOrEqual(400);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('Invalid email or password');
+  });
+
+  // Signup with empty required fields
+  test('Signup with missing required fields should fail', async () => {
+    const res = await request(app)
+      .post('/api/auth/signup')
+      .send({
+        name: '',
+        email: '',
+        password: ''
+      });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('Missing required fields');
+  });
+
+  // Signup without name
+  test('Signup without name should fail', async () => {
+    const res = await request(app)
+      .post('/api/auth/signup')
+      .send({
+        email: 'test@example.com',
+        password: 'Test123'
+      });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('Missing required fields');
   });
 
 });
