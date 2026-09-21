@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle, Phone, MessageSquare, Mail } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { API_BASE_URL } from '../../config';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -34,6 +34,7 @@ function LocationPicker({ position, setPosition }: { position: { lat: number, ln
 export function LandlordDashboard() {
   const [listings, setListings] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -88,9 +89,55 @@ export function LandlordDashboard() {
     }
   };
 
+  const fetchMessages = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.id) return;
+      
+      const response = await fetch(`${API_BASE_URL}/api/messages/landlord/${user.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
+
+  const handleSendReply = async (messageId: number) => {
+    if (!replyText.trim()) {
+      alert("Please enter a reply.");
+      return;
+    }
+    setIsSubmittingReply(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}/reply`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reply_text: replyText.trim() })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Reply sent successfully!");
+        setReplyingMessageId(null);
+        setReplyText('');
+        fetchMessages();
+      } else {
+        alert(data.error || "Failed to send reply.");
+      }
+    } catch (error) {
+      console.error("Failed to send reply:", error);
+      alert("An error occurred while sending the reply.");
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
   useEffect(() => {
     fetchListings();
     fetchBookings();
+    fetchMessages();
   }, []);
 
   const defaultListing = {
@@ -273,6 +320,7 @@ export function LandlordDashboard() {
     { label: 'Total Listings', value: listings.length, icon: Home, color: '#1a7a6e', bg: '#e8f5f3' },
     { label: 'Available', value: listings.filter((l) => l.availability === 'Available').length, icon: TrendingUp, color: '#52b788', bg: '#d8f3dc' },
     { label: 'Pending Bookings', value: bookings.filter((b) => b.status === 'pending').length, icon: Calendar, color: '#e07b39', bg: '#fdf0e8' },
+    { label: 'Messages', value: messages.length, icon: MessageSquare, color: '#1a7a6e', bg: '#e8f5f3' },
   ];
 
   return (
@@ -563,6 +611,167 @@ export function LandlordDashboard() {
             )}
           </div>
         )}
+
+        {/* Messages Tab Content */}
+        {activeTab === 'messages' && (
+          <div>
+            {messages.length > 0 ? (
+              <div className="space-y-4">
+                {messages.map((msg) => (
+                  <Card key={msg.message_id} className="shadow-sm border-0" style={{ border: '1px solid rgba(26,122,110,0.1)' }}>
+                    <CardContent className="pt-5 pb-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-white flex-shrink-0" style={{ backgroundColor: '#1a7a6e' }}>
+                            {msg.sender_name ? msg.sender_name.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-base" style={{ color: '#0d1f1d' }}>{msg.sender_name}</h3>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                              <span className="flex items-center gap-1"><Mail className="w-3 h-3 text-teal-600" /> {msg.sender_email}</span>
+                              {msg.stay_title && (
+                                <span className="font-medium px-2 py-0.5 rounded" style={{ backgroundColor: '#e8f5f3', color: '#1a7a6e' }}>
+                                  Listing: {msg.stay_title}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-400 flex-shrink-0">
+                          {new Date(msg.created_at).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="p-4 rounded-xl text-sm leading-relaxed mb-3" style={{ backgroundColor: '#f7fafa', border: '1px solid rgba(26,122,110,0.08)', color: '#2b3e3c' }}>
+                        {msg.message}
+                      </div>
+
+                      {/* Display Reply or Reply Input */}
+                      {msg.reply_text ? (
+                        <div className="p-4 rounded-xl text-sm leading-relaxed mt-3" style={{ backgroundColor: '#e8f5f3', border: '1px solid rgba(26,122,110,0.2)' }}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-xs text-teal-800 uppercase tracking-wider">Your Reply</span>
+                            {msg.replied_at && (
+                              <span className="text-[11px] text-teal-600">{new Date(msg.replied_at).toLocaleString()}</span>
+                            )}
+                          </div>
+                          <p className="text-gray-800">{msg.reply_text}</p>
+                        </div>
+                      ) : replyingMessageId === msg.message_id ? (
+                        <div className="mt-3 space-y-2">
+                          <Textarea
+                            placeholder="Type your reply here..."
+                            rows={3}
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            className="w-full text-sm"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setReplyingMessageId(null); setReplyText(''); }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}
+                              onClick={() => handleSendReply(msg.message_id)}
+                              disabled={isSubmittingReply || !replyText.trim()}
+                            >
+                              {isSubmittingReply ? 'Sending...' : 'Send Reply'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-3 flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs"
+                            style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}
+                            onClick={() => { setReplyingMessageId(msg.message_id); setReplyText(''); }}
+                          >
+                            Reply to Student
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="shadow-sm border-0 p-16 text-center" style={{ border: '1px solid rgba(26,122,110,0.1)' }}>
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#e8f5f3' }}>
+                  <MessageSquare className="w-8 h-8" style={{ color: '#1a7a6e' }} />
+                </div>
+                <h3 className="font-semibold mb-1" style={{ color: '#0d1f1d' }}>No messages yet</h3>
+                <p className="text-sm" style={{ color: '#5a7874' }}>Messages sent by students inquiring about your listings will appear here.</p>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Listings Tab Content */}
+        {activeTab === 'listings' && (
+          <Card className="shadow-sm border-0" style={{ border: '1px solid rgba(26,122,110,0.1)' }}>
+            <CardHeader className="pb-4">
+              <CardTitle style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: '22px', color: '#0d1f1d' }}>
+                Your Listings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {listings.map((listing) => (
+                  <div key={listing.id} className="flex items-start gap-4 p-4 rounded-xl transition-shadow hover:shadow-md" style={{ border: '1px solid rgba(26,122,110,0.1)', backgroundColor: 'white' }}>
+                    <div className="w-32 flex-shrink-0 flex flex-col gap-2">
+                      <div className="w-full h-24 overflow-hidden rounded-xl">
+                        <img src={listing.image_url || 'https://via.placeholder.com/150'} alt={listing.title} className="w-full h-full object-cover" />
+                      </div>
+                      {(listing.latitude && listing.longitude) ? (
+                        <div className="w-full h-24 overflow-hidden rounded-xl border">
+                          <MapContainer center={[listing.latitude, listing.longitude]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
+                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <Marker position={[listing.latitude, listing.longitude]} />
+                          </MapContainer>
+                        </div>
+                      ) : listing.map_url ? (
+                        <div className="w-full h-24 overflow-hidden rounded-xl border" dangerouslySetInnerHTML={{ __html: listing.map_url.replace(/width="\d+"/, 'width="100%"').replace(/height="\d+"/, 'height="100%"') }} />
+                      ) : null}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2 gap-2">
+                        <div>
+                          <h3 className="font-semibold" style={{ color: '#0d1f1d' }}>{listing.title}</h3>
+                          <p className="text-sm" style={{ color: '#5a7874' }}>{listing.location}</p>
+                        </div>
+                        <span
+                          className="px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0"
+                          style={
+                            listing.availability === 'Available'
+                              ? { backgroundColor: '#d8f3dc', color: '#1a5c30' }
+                              : { backgroundColor: '#eff6f5', color: '#5a7874' }
+                          }
+                        >
+                          {listing.availability}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
+                        {[
+                          { label: 'Price', value: `Rs. ${listing.price.toLocaleString()}/mo` },
+                          { label: 'Room Type', value: listing.roomType },
+                          { label: 'Gender', value: listing.gender },
+                          { label: 'Rating', value: `⭐ ${listing.rating}` },
+                        ].map(({ label, value }) => (
+                          <div key={label}>
+                            <p className="text-xs mb-0.5" style={{ color: '#5a7874' }}>{label}</p>
+                            <p className="font-semibold text-sm" style={{ color: '#0d1f1d' }}>{value}</p>
+                          </div>
+                        ))}
+                      </div>
 
         {/* Listings Tab Content */}
         {activeTab === 'listings' && (

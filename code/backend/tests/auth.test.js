@@ -3,10 +3,6 @@ const { app, pool } = require('../server');
 
 describe('Authentication Tests', () => {
 
-  afterAll(async () => {
-    await pool.end(); // close DB connection
-  });
-
   // ❌ Invalid login
   test('Login with wrong credentials should fail', async () => {
     const res = await request(app)

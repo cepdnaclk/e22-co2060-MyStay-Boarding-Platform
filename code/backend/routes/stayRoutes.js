@@ -71,7 +71,7 @@ router.get('/:id', async (req, res) => {
     const pool = req.pool;
     try {
         const query = `
-            SELECT S.*, U.name AS landlordName, U.email AS landlordContact 
+            SELECT S.*, U.name AS landlordName, U.email AS landlordContact, U.phone AS landlordPhone 
             FROM Stays S 
             LEFT JOIN Users U ON S.landlord_id = U.id 
             WHERE S.stay_id = ?
