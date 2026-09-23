@@ -59,14 +59,19 @@ router.get('/student/:student_id', async (req, res) => {
     
     try {
         const query = `
-            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, s.price, s.address, s.image_url
+            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, s.price, s.address, s.latitude, s.longitude, s.map_url, s.image_url
             FROM Booking_Requests b
             JOIN Stays s ON b.listing_id = s.stay_id
             WHERE b.student_id = ?
             ORDER BY b.request_date DESC`;
 
         const [rows] = await req.pool.query(query, [student_id]);
-        res.json(rows);
+        const formattedRows = rows.map(b => ({
+            ...b,
+            latitude: b.latitude != null ? parseFloat(b.latitude) : null,
+            longitude: b.longitude != null ? parseFloat(b.longitude) : null
+        }));
+        res.json(formattedRows);
 
     } catch (err) {
         console.error("❌ Fetch Error:", err.message);
@@ -80,7 +85,7 @@ router.get('/landlord/:landlord_id', async (req, res) => {
     
     try {
         const query = `
-            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, u.name as student_name, u.email as student_email, u.phone as student_phone
+            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, s.address, s.latitude, s.longitude, s.map_url, s.image_url, u.name as student_name, u.email as student_email, u.phone as student_phone
             FROM Booking_Requests b
             JOIN Stays s ON b.listing_id = s.stay_id
             JOIN Users u ON b.student_id = u.id
@@ -88,7 +93,12 @@ router.get('/landlord/:landlord_id', async (req, res) => {
             ORDER BY b.request_date DESC`;
 
         const [rows] = await req.pool.query(query, [landlord_id]);
-        res.json(rows);
+        const formattedRows = rows.map(b => ({
+            ...b,
+            latitude: b.latitude != null ? parseFloat(b.latitude) : null,
+            longitude: b.longitude != null ? parseFloat(b.longitude) : null
+        }));
+        res.json(formattedRows);
 
     } catch (err) {
         console.error("❌ Fetch Error:", err.message);
