@@ -799,69 +799,6 @@ export function LandlordDashboard() {
                         ))}
                       </div>
 
-        {/* Listings Tab Content */}
-        {activeTab === 'listings' && (
-          <Card className="shadow-sm border-0" style={{ border: '1px solid rgba(26,122,110,0.1)' }}>
-            <CardHeader className="pb-4">
-              <CardTitle style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 400, fontSize: '22px', color: '#0d1f1d' }}>
-                Your Listings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {listings.map((listing) => (
-                  <div key={listing.id} className="flex items-start gap-4 p-4 rounded-xl transition-shadow hover:shadow-md" style={{ border: '1px solid rgba(26,122,110,0.1)', backgroundColor: 'white' }}>
-                    <div className="w-32 flex-shrink-0 flex flex-col gap-2">
-                      <div className="w-full h-24 overflow-hidden rounded-xl">
-                        <img src={listing.image_url || 'https://via.placeholder.com/150'} alt={listing.title} className="w-full h-full object-cover" />
-                      </div>
-                      {(listing.latitude != null && listing.longitude != null && !isNaN(Number(listing.latitude)) && !isNaN(Number(listing.longitude))) ? (
-                        <div className="w-full h-24 overflow-hidden rounded-xl border">
-                          <MapContainer center={[Number(listing.latitude), Number(listing.longitude)]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
-                            <TileLayer
-                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                            />
-                            <Marker position={[Number(listing.latitude), Number(listing.longitude)]} />
-                          </MapContainer>
-                        </div>
-                      ) : listing.map_url ? (
-                        <div className="w-full h-24 overflow-hidden rounded-xl border" dangerouslySetInnerHTML={{ __html: listing.map_url.replace(/width="\d+"/, 'width="100%"').replace(/height="\d+"/, 'height="100%"') }} />
-                      ) : null}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2 gap-2">
-                        <div>
-                          <h3 className="font-semibold" style={{ color: '#0d1f1d' }}>{listing.title}</h3>
-                          <p className="text-sm" style={{ color: '#5a7874' }}>{listing.location}</p>
-                        </div>
-                        <span
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0"
-                          style={
-                            listing.availability === 'Available'
-                              ? { backgroundColor: '#d8f3dc', color: '#1a5c30' }
-                              : { backgroundColor: '#eff6f5', color: '#5a7874' }
-                          }
-                        >
-                          {listing.availability}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
-                        {[
-                          { label: 'Price', value: `Rs. ${listing.price.toLocaleString()}/mo` },
-                          { label: 'Room Type', value: listing.roomType },
-                          { label: 'Gender', value: listing.gender },
-                          { label: 'Rating', value: `⭐ ${listing.rating}` },
-                        ].map(({ label, value }) => (
-                          <div key={label}>
-                            <p className="text-xs mb-0.5" style={{ color: '#5a7874' }}>{label}</p>
-                            <p className="font-semibold text-sm" style={{ color: '#0d1f1d' }}>{value}</p>
-                          </div>
-                        ))}
-                      </div>
-
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" className="gap-1.5 text-xs" style={{ borderColor: 'rgba(26,122,110,0.25)', color: '#1a7a6e' }} onClick={() => handleEdit(listing)}>
                           <Edit className="w-3.5 h-3.5" /> Edit
