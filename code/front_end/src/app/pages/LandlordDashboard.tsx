@@ -9,6 +9,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -306,6 +307,7 @@ export function LandlordDashboard() {
       if (response.ok) {
         alert(`Booking ${status} successfully!`);
         fetchBookings(); // Refresh the bookings list
+        fetchListings(); // Refresh the listings list
       } else {
         const data = await response.json();
         alert(data.error || "Failed to update booking status.");
@@ -424,7 +426,10 @@ export function LandlordDashboard() {
                       <Label>Location Map (Optional)</Label>
                       <div className="h-[250px] rounded-lg overflow-hidden border">
                         <MapContainer center={[newListing.latitude || 6.9271, newListing.longitude || 79.8612]} zoom={13} style={{ height: '100%', zIndex: 0 }}>
-                          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                          />
                           <LocationPicker
                             position={newListing.latitude && newListing.longitude ? { lat: newListing.latitude, lng: newListing.longitude } : undefined}
                             setPosition={(pos) => setNewListing({ ...newListing, latitude: pos.lat, longitude: pos.lng })}
@@ -565,7 +570,25 @@ export function LandlordDashboard() {
                               <div>{booking.student_phone}</div>
                               <div className="text-xs text-gray-500">{booking.student_email}</div>
                             </td>
-                            <td className="px-6 py-4" style={{ color: '#1a7a6e' }}>{booking.title}</td>
+                            <td className="px-6 py-4" style={{ color: '#1a7a6e' }}>
+                              <div className="font-semibold">{booking.title}</div>
+                              {booking.address && (
+                                <div className="text-xs text-gray-500 mt-0.5">{booking.address}</div>
+                              )}
+                              {(booking.latitude != null && booking.longitude != null && !isNaN(Number(booking.latitude)) && !isNaN(Number(booking.longitude))) ? (
+                                <div className="w-32 h-20 overflow-hidden rounded-lg border mt-1.5 relative z-0">
+                                  <MapContainer center={[Number(booking.latitude), Number(booking.longitude)]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
+                                    <TileLayer
+                                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                                      url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                                    />
+                                    <Marker position={[Number(booking.latitude), Number(booking.longitude)]} />
+                                  </MapContainer>
+                                </div>
+                              ) : booking.map_url ? (
+                                <div className="w-32 h-20 overflow-hidden rounded-lg border mt-1.5" dangerouslySetInnerHTML={{ __html: booking.map_url.replace(/width="\d+"/, 'width="100%"').replace(/height="\d+"/, 'height="100%"') }} />
+                              ) : null}
+                            </td>
                             <td className="px-6 py-4 text-gray-600">
                               {new Date(booking.request_date).toLocaleDateString()}
                             </td>
@@ -729,11 +752,14 @@ export function LandlordDashboard() {
                       <div className="w-full h-24 overflow-hidden rounded-xl">
                         <img src={listing.image_url || 'https://via.placeholder.com/150'} alt={listing.title} className="w-full h-full object-cover" />
                       </div>
-                      {(listing.latitude && listing.longitude) ? (
+                      {(listing.latitude != null && listing.longitude != null && !isNaN(Number(listing.latitude)) && !isNaN(Number(listing.longitude))) ? (
                         <div className="w-full h-24 overflow-hidden rounded-xl border">
-                          <MapContainer center={[listing.latitude, listing.longitude]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
-                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <Marker position={[listing.latitude, listing.longitude]} />
+                          <MapContainer center={[Number(listing.latitude), Number(listing.longitude)]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
+                            <TileLayer
+                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                            />
+                            <Marker position={[Number(listing.latitude), Number(listing.longitude)]} />
                           </MapContainer>
                         </div>
                       ) : listing.map_url ? (
@@ -789,11 +815,14 @@ export function LandlordDashboard() {
                       <div className="w-full h-24 overflow-hidden rounded-xl">
                         <img src={listing.image_url || 'https://via.placeholder.com/150'} alt={listing.title} className="w-full h-full object-cover" />
                       </div>
-                      {(listing.latitude && listing.longitude) ? (
+                      {(listing.latitude != null && listing.longitude != null && !isNaN(Number(listing.latitude)) && !isNaN(Number(listing.longitude))) ? (
                         <div className="w-full h-24 overflow-hidden rounded-xl border">
-                          <MapContainer center={[listing.latitude, listing.longitude]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
-                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <Marker position={[listing.latitude, listing.longitude]} />
+                          <MapContainer center={[Number(listing.latitude), Number(listing.longitude)]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
+                            <TileLayer
+                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                            />
+                            <Marker position={[Number(listing.latitude), Number(listing.longitude)]} />
                           </MapContainer>
                         </div>
                       ) : listing.map_url ? (

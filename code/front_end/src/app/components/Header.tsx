@@ -23,11 +23,23 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const isActive = (path: string) => location.pathname === path;
 
+  const isLoggedIn = !!localStorage.getItem('token');
+
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/browse', label: 'Browse Listings' },
     { to: '/landlord-dashboard', label: 'For Landlords' },
   ];
+
+  if (isLoggedIn) {
+    navLinks.push({ to: '/chat', label: 'Messages' });
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
 
   return (
     <header className="border-b bg-white sticky top-0 z-50 shadow-sm" style={{ borderColor: 'rgba(26,122,110,0.12)' }}>
@@ -45,7 +57,7 @@ export function Header() {
               </span>
             </div>
           </Link>
-
+ 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map(({ to, label }) => (
@@ -63,31 +75,45 @@ export function Header() {
               </Link>
             ))}
           </nav>
-
+ 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-2">
-            <Link to="/login">
+            {isLoggedIn ? (
               <Button
                 variant="ghost"
                 size="sm"
                 className="gap-2 text-sm font-medium"
-                style={{ color: '#1a7a6e' }}
+                style={{ color: '#e07b39' }}
+                onClick={handleLogout}
               >
-                <LogIn className="w-4 h-4" />
-                Login
+                Logout
               </Button>
-            </Link>
-            <Link to="/signup">
-              <Button
-                size="sm"
-                className="text-sm font-medium px-5"
-                style={{ backgroundColor: '#e07b39', color: 'white', border: 'none' }}
-              >
-                Sign Up
-              </Button>
-            </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-sm font-medium"
+                    style={{ color: '#1a7a6e' }}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button
+                    size="sm"
+                    className="text-sm font-medium px-5"
+                    style={{ backgroundColor: '#e07b39', color: 'white', border: 'none' }}
+                  >
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
-
+ 
           {/* Mobile Menu Toggle */}
           <button
             className="md:hidden p-2 rounded-lg"
@@ -97,7 +123,7 @@ export function Header() {
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
-
+ 
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden mt-3 pb-3 border-t pt-3 space-y-1" style={{ borderColor: 'rgba(26,122,110,0.12)' }}>
@@ -115,16 +141,33 @@ export function Header() {
               </Link>
             ))}
             <div className="flex gap-2 pt-2">
-              <Link to="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full" style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}>
-                  Login
+              {isLoggedIn ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full" 
+                  style={{ borderColor: '#e07b39', color: '#e07b39' }}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleLogout();
+                  }}
+                >
+                  Logout
                 </Button>
-              </Link>
-              <Link to="/signup" className="flex-1" onClick={() => setMobileOpen(false)}>
-                <Button size="sm" className="w-full" style={{ backgroundColor: '#e07b39', color: 'white', border: 'none' }}>
-                  Sign Up
-                </Button>
-              </Link>
+              ) : (
+                <>
+                  <Link to="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full" style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}>
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/signup" className="flex-1" onClick={() => setMobileOpen(false)}>
+                    <Button size="sm" className="w-full" style={{ backgroundColor: '#e07b39', color: 'white', border: 'none' }}>
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
