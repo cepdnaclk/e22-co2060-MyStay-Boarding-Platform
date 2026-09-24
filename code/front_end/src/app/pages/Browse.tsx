@@ -44,7 +44,8 @@ export function Browse() {
             id: stay.stay_id.toString(),
             location: stay.address,
             facilities: stay.facilities ? stay.facilities.split(',').map((f: string) => f.trim()) : [],
-            rating: 4.5, 
+            rating: stay.rating !== undefined && Number(stay.rating) > 0 ? Number(stay.rating) : 0,
+            review_count: stay.review_count !== undefined ? Number(stay.review_count) : 0,
             distance: 'Unknown distance', 
             availability: stay.availability || 'Available',
             price: Number(stay.price),
@@ -271,8 +272,10 @@ export function Browse() {
                       <span>{listing.roomType} · {listing.gender}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium text-xs" style={{ color: '#0d1f1d' }}>{listing.rating.toFixed(1)}</span>
+                      <Star className={`w-3.5 h-3.5 ${listing.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                      <span className="font-medium text-xs" style={{ color: '#0d1f1d' }}>
+                        {listing.rating > 0 ? listing.rating.toFixed(1) : 'New'}
+                      </span>
                     </div>
                   </div>
 

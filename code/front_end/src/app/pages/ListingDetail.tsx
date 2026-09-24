@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import { MapPin, DollarSign, Users, Star, Phone, ArrowLeft, CheckCircle, MessageCircle, Calendar, Send } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -133,38 +133,39 @@ export function ListingDetail() {
     }
   };
 
-  useEffect(() => {
-    const fetchListing = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/stays/${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setListing({
-            ...data,
-            id: data.stay_id.toString(),
-            location: data.address,
-            facilities: data.facilities ? data.facilities.split(',').map((f: string) => f.trim()) : [],
-            rating: 4.5, // Dummy rating
-            distance: 'Unknown distance', // Dummy distance
-            availability: data.availability || 'Available',
-            price: Number(data.price),
-            roomType: data.roomType || 'Single',
-            gender: data.gender || 'Any',
-            landlordName: data.landlordName || 'Unknown Landlord',
-            landlordContact: data.landlordContact || 'No contact info',
-            landlordPhone: data.landlordPhone || 'No phone number'
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch listing:', error);
-      } finally {
-        setIsLoading(false);
+  const fetchListing = useCallback(async () => {
+    if (!id) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stays/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setListing({
+          ...data,
+          id: data.stay_id.toString(),
+          location: data.address,
+          facilities: data.facilities ? data.facilities.split(',').map((f: string) => f.trim()) : [],
+          rating: data.rating !== undefined && Number(data.rating) > 0 ? Number(data.rating) : 0,
+          review_count: data.review_count !== undefined ? Number(data.review_count) : 0,
+          distance: 'Unknown distance',
+          availability: data.availability || 'Available',
+          price: Number(data.price),
+          roomType: data.roomType || 'Single',
+          gender: data.gender || 'Any',
+          landlordName: data.landlordName || 'Unknown Landlord',
+          landlordContact: data.landlordContact || 'No contact info',
+          landlordPhone: data.landlordPhone || 'No phone number'
+        });
       }
-    };
-    if (id) {
-        fetchListing();
+    } catch (error) {
+      console.error('Failed to fetch listing:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    fetchListing();
+  }, [fetchListing]);
 
 
 
@@ -271,11 +272,15 @@ export function ListingDetail() {
 
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#fdf0e8' }}>
-                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                      <Star className={`w-5 h-5 ${listing.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm" style={{ color: '#0d1f1d' }}>{listing.rating.toFixed(1)} Rating</p>
-                      <p className="text-xs" style={{ color: '#5a7874' }}>Based on reviews</p>
+                      <p className="font-semibold text-sm" style={{ color: '#0d1f1d' }}>
+                        {listing.rating > 0 ? `${listing.rating.toFixed(1)} Rating` : 'No Ratings Yet'}
+                      </p>
+                      <p className="text-xs" style={{ color: '#5a7874' }}>
+                        {listing.review_count > 0 ? `Based on ${listing.review_count} review${listing.review_count > 1 ? 's' : ''}` : 'Be the first to review!'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -347,7 +352,7 @@ export function ListingDetail() {
             </Card>
 
             {/* --- 3. Add the ReviewSection component here --- */}
-            <ReviewSection listingId={id} currentUser={currentUser} />
+            <ReviewSection listingId={id} currentUser={currentUser} onReviewAdded={fetchListing} />
           </div>
 
           {/* ── Sidebar ── */}
