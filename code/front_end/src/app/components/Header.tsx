@@ -28,6 +28,7 @@ export function Header() {
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/browse', label: 'Browse Listings' },
+    { to: '/find-roommate', label: 'Find a Roommate' },
     { to: '/landlord-dashboard', label: 'For Landlords' },
   ];
 
