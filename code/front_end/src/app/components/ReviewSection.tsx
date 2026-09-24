@@ -8,9 +8,10 @@ import { Textarea } from './ui/textarea';
 interface ReviewSectionProps {
   listingId: string | undefined; 
   currentUser: any;
+  onReviewAdded?: () => void;
 }
 
-export function ReviewSection({ listingId, currentUser }: ReviewSectionProps) {
+export function ReviewSection({ listingId, currentUser, onReviewAdded }: ReviewSectionProps) {
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -64,6 +65,7 @@ export function ReviewSection({ listingId, currentUser }: ReviewSectionProps) {
         setComment('');
         setRating(5);
         fetchReviews(); // Refresh the list
+        if (onReviewAdded) onReviewAdded();
         alert("Feedback submitted successfully!");
       } else {
         // This will display the specific database error (e.g., Foreign Key failure)

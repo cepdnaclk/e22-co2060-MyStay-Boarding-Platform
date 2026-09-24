@@ -29,8 +29,9 @@ MyStay is a web-based platform designed to help students and professionals find 
 3. [Software Designs](#software-designs)
 4. [Testing](#testing)
 5. [Directory Structure](#directory-structure)
-6. [Conclusion](#conclusion)
-7. [Links](#links)
+6. [Developer Guide](DEVELOPER_GUIDE.md)
+7. [Conclusion](#conclusion)
+8. [Links](#links)
 
 ---
 
@@ -85,6 +86,9 @@ This project includes an automated test suite to validate core functionalities. 
  ┃ ┗ 📜 README.md        # Docs specific README
  ┗ 📜 README.md          # Project root README
 ```
+
+## Developer Guide
+For setup instructions, local development, environment configuration, database schema, API documentation, testing, and deployment details, please refer to the [Developer Guide](DEVELOPER_GUIDE.md).
 
 ---
 
