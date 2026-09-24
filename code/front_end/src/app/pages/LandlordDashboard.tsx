@@ -790,7 +790,7 @@ export function LandlordDashboard() {
                           { label: 'Price', value: `Rs. ${listing.price.toLocaleString()}/mo` },
                           { label: 'Room Type', value: listing.roomType },
                           { label: 'Gender', value: listing.gender },
-                          { label: 'Rating', value: `⭐ ${listing.rating}` },
+                          { label: 'Rating', value: `⭐ ${listing.rating ?? 0}` },
                         ].map(({ label, value }) => (
                           <div key={label}>
                             <p className="text-xs mb-0.5" style={{ color: '#5a7874' }}>{label}</p>

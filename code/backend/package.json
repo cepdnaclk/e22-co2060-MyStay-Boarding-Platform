@@ -1,7 +1,12 @@
 {
   "scripts": {
     "start": "node server.js",
-    "test": "jest --forceExit"
+    "test": "jest --runInBand"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ]
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

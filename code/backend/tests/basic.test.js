@@ -1,11 +1,13 @@
 const request = require('supertest');
-const { app, pool } = require('../server');
+const { app } = require('../server');
 
 describe('Basic API Test', () => {
-  test('GET /api/stays should respond', async () => {
+
+  test('GET /api/stays should respond successfully', async () => {
     const res = await request(app).get('/api/stays');
 
-    // We don’t assume DB works → just check response exists
-    expect(res.statusCode).toBeGreaterThanOrEqual(200);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
   });
+
 });
