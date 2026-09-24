@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, Image, SafeAreaView, Platform } from 'react-native';
-import { Search, MapPin, DollarSign, Users, Star, User } from 'lucide-react-native';
+import { Search, MapPin, DollarSign, Users, Star, User, MessageSquare } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import api from '../services/api';
@@ -124,27 +124,37 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.headerTitle}>Browse Boarding Places</Text>
             <Text style={styles.headerDescription}>Find your perfect room near University of Peradeniya</Text>
           </View>
-          <TouchableOpacity 
-            style={{ padding: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 20 }}
-            onPress={() => {
-              if (isLoggedIn) {
-                if (userRole === 'landlord') {
-                  navigation.navigate('LandlordDashboard');
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {isLoggedIn && (
+              <TouchableOpacity 
+                style={{ padding: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 20 }}
+                onPress={() => navigation.navigate('ChatList')}
+              >
+                <MessageSquare size={24} color="#fff" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity 
+              style={{ padding: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 20 }}
+              onPress={() => {
+                if (isLoggedIn) {
+                  if (userRole === 'landlord') {
+                    navigation.navigate('LandlordDashboard');
+                  } else {
+                    // For student, maybe a simple profile alert or a screen if we had one
+                    // For now, logout option
+                    AsyncStorage.removeItem('userToken');
+                    AsyncStorage.removeItem('userData');
+                    setIsLoggedIn(false);
+                    setUserRole(null);
+                  }
                 } else {
-                  // For student, maybe a simple profile alert or a screen if we had one
-                  // For now, logout option
-                  AsyncStorage.removeItem('userToken');
-                  AsyncStorage.removeItem('userData');
-                  setIsLoggedIn(false);
-                  setUserRole(null);
+                  navigation.navigate('Login');
                 }
-              } else {
-                navigation.navigate('Login');
-              }
-            }}
-          >
-            <User size={24} color="#fff" />
-          </TouchableOpacity>
+              }}
+            >
+              <User size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search Bar */}

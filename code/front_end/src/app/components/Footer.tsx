@@ -14,10 +14,10 @@ export function Footer() {
               <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: '20px', color: 'white' }}>MyStay</span>
             </div>
             <p style={{ color: '#7ab5af', lineHeight: '1.7' }}>
-              A centralized platform for finding quality boarding places near University of Peradeniya.
+              Share Your Thoughts with US
             </p>
             <p className="mt-3 text-xs font-medium tracking-widest uppercase" style={{ color: '#e07b39' }}>
-              Find Your Space.
+              <a href={"https://forms.gle/1imxfsFTZ8nr8PH76"}>Click Here</a>
             </p>
           </div>
 

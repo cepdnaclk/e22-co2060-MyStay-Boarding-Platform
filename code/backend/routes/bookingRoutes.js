@@ -38,10 +38,7 @@ router.post('/add', async (req, res) => {
         const query = "INSERT INTO Booking_Requests (student_id, listing_id, status) VALUES (?, ?, 'pending')";
         await req.pool.query(query, [student_id, listing_id]);
 
-        // Update the listing's availability to 'Booked'
-        await req.pool.query("UPDATE Stays SET availability = 'Booked' WHERE stay_id = ?", [listing_id]);
-
-        console.log("✅ Booking request successfully saved and listing marked as Booked.");
+        console.log("✅ Booking request successfully saved as pending.");
         res.status(201).json({ message: "Booking request submitted successfully!" });
 
     } catch (err) {
@@ -62,14 +59,19 @@ router.get('/student/:student_id', async (req, res) => {
     
     try {
         const query = `
-            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, s.price, s.address, s.image_url
+            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, s.price, s.address, s.latitude, s.longitude, s.map_url, s.image_url
             FROM Booking_Requests b
             JOIN Stays s ON b.listing_id = s.stay_id
             WHERE b.student_id = ?
             ORDER BY b.request_date DESC`;
 
         const [rows] = await req.pool.query(query, [student_id]);
-        res.json(rows);
+        const formattedRows = rows.map(b => ({
+            ...b,
+            latitude: b.latitude != null ? parseFloat(b.latitude) : null,
+            longitude: b.longitude != null ? parseFloat(b.longitude) : null
+        }));
+        res.json(formattedRows);
 
     } catch (err) {
         console.error("❌ Fetch Error:", err.message);
@@ -83,7 +85,7 @@ router.get('/landlord/:landlord_id', async (req, res) => {
     
     try {
         const query = `
-            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, u.name as student_name, u.email as student_email, u.phone as student_phone
+            SELECT b.request_id, b.status, b.request_date, s.stay_id, s.title, s.address, s.latitude, s.longitude, s.map_url, s.image_url, u.name as student_name, u.email as student_email, u.phone as student_phone
             FROM Booking_Requests b
             JOIN Stays s ON b.listing_id = s.stay_id
             JOIN Users u ON b.student_id = u.id
@@ -91,7 +93,12 @@ router.get('/landlord/:landlord_id', async (req, res) => {
             ORDER BY b.request_date DESC`;
 
         const [rows] = await req.pool.query(query, [landlord_id]);
-        res.json(rows);
+        const formattedRows = rows.map(b => ({
+            ...b,
+            latitude: b.latitude != null ? parseFloat(b.latitude) : null,
+            longitude: b.longitude != null ? parseFloat(b.longitude) : null
+        }));
+        res.json(formattedRows);
 
     } catch (err) {
         console.error("❌ Fetch Error:", err.message);
@@ -109,20 +116,40 @@ router.put('/:request_id/status', async (req, res) => {
     }
 
     try {
+        const pool = req.pool;
+
+        // Fetch the booking details to know the listing_id
+        const [bookingRows] = await pool.query('SELECT listing_id FROM Booking_Requests WHERE request_id = ?', [request_id]);
+        if (bookingRows.length === 0) {
+            return res.status(404).json({ error: "Booking request not found" });
+        }
+        const booking = bookingRows[0];
+        const listing_id = booking.listing_id;
+
+        // Prevent approving if stay is already booked (occupied)
+        if (status === 'approved') {
+            const [stayRows] = await pool.query('SELECT availability FROM Stays WHERE stay_id = ?', [listing_id]);
+            if (stayRows.length > 0 && stayRows[0].availability === 'Booked') {
+                return res.status(400).json({ error: "This stay is already booked and occupied." });
+            }
+        }
+
+        // Update booking request status
         const query = 'UPDATE Booking_Requests SET status = ? WHERE request_id = ?';
-        const [result] = await req.pool.query(query, [status, request_id]);
+        const [result] = await pool.query(query, [status, request_id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Booking request not found" });
         }
 
-        // If rejected, make the listing available again (if no other pending/approved bookings exist)
+        // If approved, update stay to 'Booked'
+        if (status === 'approved') {
+            await pool.query("UPDATE Stays SET availability = 'Booked' WHERE stay_id = ?", [listing_id]);
+        }
+
+        // If rejected, update stay to 'Available'
         if (status === 'rejected') {
-            const [booking] = await req.pool.query('SELECT listing_id FROM Booking_Requests WHERE request_id = ?', [request_id]);
-            if (booking.length > 0) {
-                const listing_id = booking[0].listing_id;
-                await req.pool.query("UPDATE Stays SET availability = 'Available' WHERE stay_id = ?", [listing_id]);
-            }
+            await pool.query("UPDATE Stays SET availability = 'Available' WHERE stay_id = ?", [listing_id]);
         }
 
         res.json({ message: `Booking successfully ${status}` });

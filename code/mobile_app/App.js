@@ -7,6 +7,8 @@ import LoginScreen from './src/screens/LoginScreen';
 import ListingDetailScreen from './src/screens/ListingDetailScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import LandlordDashboardScreen from './src/screens/LandlordDashboardScreen';
+import ChatScreen from './src/screens/ChatScreen';
+import ChatListScreen from './src/screens/ChatListScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +21,8 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login', headerShown: false }} />
         <Stack.Screen name="Signup" component={SignupScreen} options={{ title: 'Sign Up', headerShown: false }} />
         <Stack.Screen name="LandlordDashboard" component={LandlordDashboardScreen} options={{ title: 'Dashboard', headerShown: false }} />
+        <Stack.Screen name="Chat" component={ChatScreen} options={{ title: 'Chat', headerShown: false }} />
+        <Stack.Screen name="ChatList" component={ChatListScreen} options={{ title: 'Conversations', headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
