@@ -21,7 +21,7 @@ The frontend testing environment uses the following technologies:
 | jsdom                 |                   29.1.1 | Browser-like test environment |
 | React Testing Library |                   16.3.3 | React component testing       |
 
-## 3. Project Structure
+## 3. Frontend File Structure
 
 The relevant frontend testing structure is:
 
