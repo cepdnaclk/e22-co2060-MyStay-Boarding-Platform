@@ -1,5 +1,9 @@
-import { useState, useEffect } from 'react';
-import { PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, CheckCircle, XCircle, Phone, MessageSquare, Mail } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { 
+  PlusCircle, Edit, Trash2, Home, TrendingUp, Users, Calendar, 
+  CheckCircle, XCircle, Phone, MessageSquare, Mail,
+  Navigation, MapPin, ExternalLink, Loader2, Search
+} from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { API_BASE_URL } from '../../config';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,7 +12,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -23,13 +27,61 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-function LocationPicker({ position, setPosition }: { position: { lat: number, lng: number } | undefined, setPosition: (pos: { lat: number, lng: number }) => void }) {
+function MapController({ center }: { center?: [number, number] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    // Invalidate size in case dialog just opened
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [map]);
+
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.setView(center, Math.max(map.getZoom(), 15));
+    }
+  }, [center, map]);
+
+  return null;
+}
+
+function LocationPicker({ 
+  position, 
+  setPosition 
+}: { 
+  position: { lat: number; lng: number } | undefined; 
+  setPosition: (pos: { lat: number; lng: number }) => void;
+}) {
   useMapEvents({
     click(e) {
       setPosition({ lat: e.latlng.lat, lng: e.latlng.lng });
     },
   });
-  return position ? <Marker position={[position.lat, position.lng]} /> : null;
+
+  const markerRef = useRef<any>(null);
+  const eventHandlers = useMemo(
+    () => ({
+      dragend() {
+        const marker = markerRef.current;
+        if (marker != null) {
+          const latlng = marker.getLatLng();
+          setPosition({ lat: latlng.lat, lng: latlng.lng });
+        }
+      },
+    }),
+    [setPosition]
+  );
+
+  return position ? (
+    <Marker 
+      draggable={true} 
+      eventHandlers={eventHandlers} 
+      position={[position.lat, position.lng]} 
+      ref={markerRef} 
+    />
+  ) : null;
 }
 
 export function LandlordDashboard() {
@@ -59,7 +111,8 @@ export function LandlordDashboard() {
           id: stay.stay_id.toString(),
           location: stay.address,
           facilities: stay.facilities ? stay.facilities.split(',').map((f: string) => f.trim()) : [],
-          rating: 4.5, // Dummy rating
+          rating: stay.rating !== undefined && Number(stay.rating) > 0 ? Number(stay.rating) : 0,
+          review_count: stay.review_count !== undefined ? Number(stay.review_count) : 0,
           distance: 'Unknown distance', // Dummy distance
           availability: stay.availability || 'Available',
           price: Number(stay.price),
@@ -157,6 +210,103 @@ export function LandlordDashboard() {
 
   const [newListing, setNewListing] = useState(defaultListing);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [mapSearchQuery, setMapSearchQuery] = useState('');
+  const [isSearchingMap, setIsSearchingMap] = useState(false);
+
+  // Helper to reverse geocode coordinates into a readable address
+  const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      if (res.ok) {
+        const data = await res.json();
+        return data.display_name || '';
+      }
+    } catch (err) {
+      console.error('Reverse geocode error:', err);
+    }
+    return '';
+  };
+
+  // 1. Get Current Location from browser GPS
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const googleUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+
+        let detectedAddress = '';
+        try {
+          detectedAddress = await reverseGeocode(lat, lng);
+        } catch (_) {}
+
+        setNewListing((prev) => ({
+          ...prev,
+          latitude: lat,
+          longitude: lng,
+          map_url: googleUrl,
+          location: prev.location || detectedAddress.split(',').slice(0, 3).join(', ') || prev.location
+        }));
+
+        setIsLocating(false);
+      },
+      (err) => {
+        setIsLocating(false);
+        alert(`Could not detect location: ${err.message}. Please click on the map to set location.`);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  // 2. Search place or area on map
+  const handleSearchOnMap = async () => {
+    if (!mapSearchQuery.trim()) return;
+    setIsSearchingMap(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(mapSearchQuery.trim())}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          const googleUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+
+          setNewListing((prev) => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+            map_url: googleUrl,
+            location: prev.location || data[0].display_name.split(',').slice(0, 3).join(', ')
+          }));
+        } else {
+          alert('Location not found. Try entering a nearby town or landmark.');
+        }
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+      alert('Failed to search location.');
+    } finally {
+      setIsSearchingMap(false);
+    }
+  };
+
+  // 3. When position is updated via map click or dragging the marker
+  const handleMapPositionChange = (pos: { lat: number; lng: number }) => {
+    const googleUrl = `https://www.google.com/maps?q=${pos.lat},${pos.lng}`;
+    setNewListing((prev) => ({
+      ...prev,
+      latitude: pos.lat,
+      longitude: pos.lng,
+      map_url: googleUrl
+    }));
+  };
 
   const handleOpenAdd = () => {
     setIsEditMode(false);
@@ -415,36 +565,129 @@ export function LandlordDashboard() {
                           }
                         }} />
                     </div>
-                    <div>
-                      <Label htmlFor="map_url">Google Maps URL (Optional)</Label>
-                      <Input id="map_url" placeholder="Paste Google Maps URL here"
-                        value={newListing.map_url}
-                        onChange={(e) => setNewListing({ ...newListing, map_url: e.target.value })} />
-                    </div>
+                    {/* Location & Map Section */}
+                    <div className="space-y-3 pt-3 pb-1 border-t" style={{ borderColor: 'rgba(26,122,110,0.15)' }}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <Label className="text-sm font-semibold" style={{ color: '#0d1f1d' }}>
+                            Property Location & Map Pin
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Click or drag the marker, or tap the button to use your device's GPS.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleUseCurrentLocation}
+                          disabled={isLocating}
+                          className="gap-1.5 text-xs font-semibold flex-shrink-0"
+                          style={{ borderColor: '#1a7a6e', color: '#1a7a6e' }}
+                        >
+                          {isLocating ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Detecting GPS...
+                            </>
+                          ) : (
+                            <>
+                              <Navigation className="w-3.5 h-3.5" />
+                              Use Current Location
+                            </>
+                          )}
+                        </Button>
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label>Location Map (Optional)</Label>
-                      <div className="h-[250px] rounded-lg overflow-hidden border">
-                        <MapContainer center={[newListing.latitude || 6.9271, newListing.longitude || 79.8612]} zoom={13} style={{ height: '100%', zIndex: 0 }}>
+                      {/* Quick Search on Map */}
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Search town/landmark (e.g. Peradeniya, Hindagala, Kandy)"
+                          value={mapSearchQuery}
+                          onChange={(e) => setMapSearchQuery(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleSearchOnMap();
+                            }
+                          }}
+                          className="text-xs"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={handleSearchOnMap}
+                          disabled={isSearchingMap || !mapSearchQuery.trim()}
+                          className="gap-1 text-xs font-medium"
+                        >
+                          {isSearchingMap ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                          Search
+                        </Button>
+                      </div>
+
+                      {/* Interactive Map */}
+                      <div className="h-[260px] rounded-xl overflow-hidden border relative" style={{ borderColor: 'rgba(26,122,110,0.2)' }}>
+                        <MapContainer 
+                          center={[newListing.latitude || 7.2549, newListing.longitude || 80.5974]} 
+                          zoom={newListing.latitude ? 15 : 13} 
+                          style={{ height: '100%', width: '100%', zIndex: 0 }}
+                        >
                           <TileLayer
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                           />
+                          <MapController 
+                            center={newListing.latitude && newListing.longitude ? [newListing.latitude, newListing.longitude] : undefined} 
+                          />
                           <LocationPicker
                             position={newListing.latitude && newListing.longitude ? { lat: newListing.latitude, lng: newListing.longitude } : undefined}
-                            setPosition={(pos) => setNewListing({ ...newListing, latitude: pos.lat, longitude: pos.lng })}
+                            setPosition={handleMapPositionChange}
                           />
                         </MapContainer>
                       </div>
-                      {newListing.latitude && newListing.longitude ? (
-                        <p className="text-xs text-muted-foreground text-center">
-                          Coords: {newListing.latitude.toFixed(4)}, {newListing.longitude.toFixed(4)}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground text-center">
-                          Click on the map to set location coordinates.
-                        </p>
-                      )}
+
+                      {/* Pinned Coordinates Badge and Open in Google Maps Link */}
+                      <div className="flex flex-wrap items-center justify-between text-xs gap-2 pt-1">
+                        {newListing.latitude && newListing.longitude ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              📍 Pinned: {newListing.latitude.toFixed(5)}, {newListing.longitude.toFixed(5)}
+                            </span>
+                            <span className="text-gray-400">• Drag marker to adjust</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Click on the map or drag the pin to set the exact coordinates.
+                          </span>
+                        )}
+
+                        {newListing.latitude && newListing.longitude && (
+                          <a
+                            href={`https://www.google.com/maps?q=${newListing.latitude},${newListing.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 font-semibold text-teal-700 hover:text-teal-800 hover:underline"
+                          >
+                            <span>Open in Google Maps</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Google Maps URL Field (Auto-populated from pin) */}
+                      <div>
+                        <Label htmlFor="map_url" className="text-xs text-gray-600">
+                          Google Maps Link (Auto-generated from your pin)
+                        </Label>
+                        <Input 
+                          id="map_url" 
+                          placeholder="Auto-generated when you select or adjust location on the map"
+                          value={newListing.map_url}
+                          onChange={(e) => setNewListing({ ...newListing, map_url: e.target.value })}
+                          className="text-xs mt-1" 
+                        />
+                      </div>
                     </div>
 
                     <Button onClick={handleSaveListing} className="w-full font-semibold" style={{ backgroundColor: '#1a7a6e', color: 'white', border: 'none' }}>
@@ -790,7 +1033,7 @@ export function LandlordDashboard() {
                           { label: 'Price', value: `Rs. ${listing.price.toLocaleString()}/mo` },
                           { label: 'Room Type', value: listing.roomType },
                           { label: 'Gender', value: listing.gender },
-                          { label: 'Rating', value: `⭐ ${listing.rating ?? 0}` },
+                          { label: 'Rating', value: listing.rating > 0 ? `⭐ ${listing.rating.toFixed(1)}` : '⭐ New' },
                         ].map(({ label, value }) => (
                           <div key={label}>
                             <p className="text-xs mb-0.5" style={{ color: '#5a7874' }}>{label}</p>

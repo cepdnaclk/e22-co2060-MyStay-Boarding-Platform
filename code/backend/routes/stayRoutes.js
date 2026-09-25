@@ -29,13 +29,23 @@ router.get('/', async (req, res) => {
     try {
         console.log(`Fetching all stays for browse page`);
 
-        const [rows] = await pool.query('SELECT * FROM Stays');
+        const query = `
+            SELECT 
+                S.*, 
+                COALESCE(ROUND(AVG(R.rating), 1), 0) AS rating,
+                COUNT(R.review_id) AS review_count
+            FROM Stays S
+            LEFT JOIN Reviews R ON S.stay_id = R.listing_id
+            GROUP BY S.stay_id
+        `;
+        const [rows] = await pool.query(query);
 
-        // Optional: Ensure latitude/longitude are sent as numbers if they come back as strings
         const formattedRows = rows.map(stay => ({
             ...stay,
             latitude: parseFloat(stay.latitude),
-            longitude: parseFloat(stay.longitude)
+            longitude: parseFloat(stay.longitude),
+            rating: parseFloat(stay.rating) || 0,
+            review_count: parseInt(stay.review_count, 10) || 0
         }));
 
         res.json(formattedRows);
@@ -51,12 +61,24 @@ router.get('/landlord/my-listings', protect, async (req, res) => {
     const landlord_id = req.user.id;
     try {
         console.log(`Fetching stays uploaded by landlord ID: ${landlord_id}`);
-        const [rows] = await pool.query('SELECT * FROM Stays WHERE landlord_id = ?', [landlord_id]);
+        const query = `
+            SELECT 
+                S.*, 
+                COALESCE(ROUND(AVG(R.rating), 1), 0) AS rating,
+                COUNT(R.review_id) AS review_count
+            FROM Stays S
+            LEFT JOIN Reviews R ON S.stay_id = R.listing_id
+            WHERE S.landlord_id = ?
+            GROUP BY S.stay_id
+        `;
+        const [rows] = await pool.query(query, [landlord_id]);
 
         const formattedRows = rows.map(stay => ({
             ...stay,
             latitude: parseFloat(stay.latitude),
-            longitude: parseFloat(stay.longitude)
+            longitude: parseFloat(stay.longitude),
+            rating: parseFloat(stay.rating) || 0,
+            review_count: parseInt(stay.review_count, 10) || 0
         }));
 
         res.json(formattedRows);
@@ -71,10 +93,18 @@ router.get('/:id', async (req, res) => {
     const pool = req.pool;
     try {
         const query = `
-            SELECT S.*, U.name AS landlordName, U.email AS landlordContact, U.phone AS landlordPhone 
+            SELECT 
+                S.*, 
+                U.name AS landlordName, 
+                U.email AS landlordContact, 
+                U.phone AS landlordPhone,
+                COALESCE(ROUND(AVG(R.rating), 1), 0) AS rating,
+                COUNT(R.review_id) AS review_count
             FROM Stays S 
             LEFT JOIN Users U ON S.landlord_id = U.id 
+            LEFT JOIN Reviews R ON S.stay_id = R.listing_id
             WHERE S.stay_id = ?
+            GROUP BY S.stay_id, U.name, U.email, U.phone
         `;
         const [rows] = await pool.query(query, [req.params.id]);
         if (rows.length === 0) {
@@ -84,7 +114,9 @@ router.get('/:id', async (req, res) => {
         const formattedStay = {
             ...stay,
             latitude: parseFloat(stay.latitude),
-            longitude: parseFloat(stay.longitude)
+            longitude: parseFloat(stay.longitude),
+            rating: parseFloat(stay.rating) || 0,
+            review_count: parseInt(stay.review_count, 10) || 0
         };
         res.json(formattedStay);
     } catch (err) {

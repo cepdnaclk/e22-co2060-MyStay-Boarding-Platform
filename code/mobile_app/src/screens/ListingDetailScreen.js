@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Linking, View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { MapPin, DollarSign, Users, CheckCircle2, ChevronLeft, Map, Phone, Mail, MessageSquare } from 'lucide-react-native';
+import { MapPin, DollarSign, Users, CheckCircle2, ChevronLeft, Map, Phone, Mail, MessageSquare, Star } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 
@@ -101,6 +101,23 @@ export default function ListingDetailScreen({ route, navigation }) {
           <View style={styles.locationContainer}>
             <MapPin size={16} color="#5a7874" />
             <Text style={styles.locationText}>{stay.address || stay.location}</Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, marginBottom: 10 }}>
+            <Star 
+              size={16} 
+              color={stay.rating && Number(stay.rating) > 0 ? "#facc15" : "#94a3b8"} 
+              fill={stay.rating && Number(stay.rating) > 0 ? "#facc15" : "transparent"} 
+              style={{ marginRight: 5 }}
+            />
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#0d1f1d', marginRight: 4 }}>
+              {stay.rating && Number(stay.rating) > 0 ? `${Number(stay.rating).toFixed(1)} / 5.0` : 'No reviews yet'}
+            </Text>
+            {stay.review_count > 0 && (
+              <Text style={{ fontSize: 13, color: '#5a7874' }}>
+                ({stay.review_count} review{stay.review_count > 1 ? 's' : ''})
+              </Text>
+            )}
           </View>
 
           {/* Key Details Row */}

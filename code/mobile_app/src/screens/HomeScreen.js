@@ -91,8 +91,14 @@ export default function HomeScreen({ navigation }) {
           </View>
 
           <View style={styles.infoRow}>
-            <Star size={14} color="#facc15" fill="#facc15" />
-            <Text style={styles.ratingText}>4.5</Text>
+            <Star 
+              size={14} 
+              color={item.rating && Number(item.rating) > 0 ? "#facc15" : "#94a3b8"} 
+              fill={item.rating && Number(item.rating) > 0 ? "#facc15" : "transparent"} 
+            />
+            <Text style={styles.ratingText}>
+              {item.rating && Number(item.rating) > 0 ? Number(item.rating).toFixed(1) : 'New'}
+            </Text>
           </View>
 
           {facilities.length > 0 && (

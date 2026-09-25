@@ -35,9 +35,13 @@ app.use(cors({
 app.use(express.json());
 
 // --- DATABASE SSL CONFIG ---
-const caPath = path.join(__dirname, 'ca.pem');
+const caPath = [
+    path.join(__dirname, 'ca.pem'),
+    path.join(__dirname, '..', 'ca.pem'),
+    path.join(__dirname, '..', '..', 'ca.pem')
+].find(p => fs.existsSync(p));
 
-const sslConfig = fs.existsSync(caPath)
+const sslConfig = caPath
     ? {
         ca: fs.readFileSync(caPath),
         rejectUnauthorized: false,
@@ -87,12 +91,18 @@ const stayRoutes = require('./routes/stayRoutes');
 const reviewRoutes = require('./routes/reviewRoutes'); // 1. Import your new review routes
 const bookingRoutes = require('./routes/bookingRoutes'); // 3. Import booking routes
 const messageRoutes = require('./routes/messageRoutes');
+const roommateRoutes = require('./routes/roommateRoutes');
+
+app.get('/', (req, res) => {
+    res.send('🚀 MyStay Backend API is running');
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/stays', stayRoutes);
 app.use('/api/reviews', reviewRoutes); // 2. Register the review endpoint
 app.use('/api/bookings', bookingRoutes); // 4. Register the booking endpoint
 app.use('/api/messages', messageRoutes);
+app.use('/api/roommates', roommateRoutes);
 
 // --- START SERVER ONLY WHEN RUNNING server.js DIRECTLY ---
 const PORT = process.env.PORT || 3000;

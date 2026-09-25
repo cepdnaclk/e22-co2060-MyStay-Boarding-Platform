@@ -7,6 +7,7 @@ import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { LandlordDashboard } from './pages/LandlordDashboard';
 import { Chat } from './pages/Chat';
+import { FindRoommate } from './pages/FindRoommate';
 import { NotFound } from './pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: Home },
       { path: 'browse', Component: Browse },
+      { path: 'find-roommate', Component: FindRoommate },
       { path: 'listing/:id', Component: ListingDetail },
       { path: 'landlord-dashboard', Component: LandlordDashboard },
       { path: 'chat', Component: Chat },
