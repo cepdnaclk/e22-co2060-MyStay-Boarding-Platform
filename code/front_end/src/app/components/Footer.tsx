@@ -27,10 +27,10 @@ export function Footer() {
               Team Members
             </h3>
             <ul className="space-y-2 text-sm" style={{ color: '#7ab5af' }}>
-              <li>E/22/120 – A.S.V. Gunasiri</li>
-              <li>E/22/001 – H.M.H.N. Aberathna</li>
-              <li>E/22/027 – M.A.N.P. Anawarathne</li>
-              <li>E/22/324 – P.H.D. Rathnasiri</li>
+              <li>A.S.V. Gunasiri</li>
+              <li>H.M.H.N. Aberathna</li>
+              <li>M.A.N.P. Anawarathne</li>
+              <li>P.H.D. Rathnasiri</li>
             </ul>
           </div>
 
