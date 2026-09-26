@@ -634,8 +634,8 @@ export function LandlordDashboard() {
                           style={{ height: '100%', width: '100%', zIndex: 0 }}
                         >
                           <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
+                            url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
                           />
                           <MapController 
                             center={newListing.latitude && newListing.longitude ? [newListing.latitude, newListing.longitude] : undefined} 
@@ -822,8 +822,8 @@ export function LandlordDashboard() {
                                 <div className="w-32 h-20 overflow-hidden rounded-lg border mt-1.5 relative z-0">
                                   <MapContainer center={[Number(booking.latitude), Number(booking.longitude)]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
                                     <TileLayer
-                                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
+                                      url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
                                     />
                                     <Marker position={[Number(booking.latitude), Number(booking.longitude)]} />
                                   </MapContainer>
@@ -999,8 +999,8 @@ export function LandlordDashboard() {
                         <div className="w-full h-24 overflow-hidden rounded-xl border">
                           <MapContainer center={[Number(listing.latitude), Number(listing.longitude)]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
                             <TileLayer
-                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
+                              url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
                             />
                             <Marker position={[Number(listing.latitude), Number(listing.longitude)]} />
                           </MapContainer>
