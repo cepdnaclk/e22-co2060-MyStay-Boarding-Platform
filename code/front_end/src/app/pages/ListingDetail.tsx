@@ -7,7 +7,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { ReviewSection } from '../components/ReviewSection';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { Textarea } from '../components/ui/textarea';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -21,6 +21,25 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   shadowUrl: markerShadow,
 });
+
+function MapController({ center }: { center: [number, number] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [map]);
+
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.setView(center, 15);
+    }
+  }, [center, map]);
+
+  return null;
+}
 
 export function ListingDetail() {
   const { id } = useParams();
@@ -337,9 +356,10 @@ export function ListingDetail() {
                   <div className="w-full h-[300px] rounded-lg overflow-hidden border relative z-0">
                     <MapContainer center={[Number(listing.latitude), Number(listing.longitude)]} zoom={15} style={{ height: '100%', width: '100%' }}>
                       <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       />
+                      <MapController center={[Number(listing.latitude), Number(listing.longitude)]} />
                       <Marker position={[Number(listing.latitude), Number(listing.longitude)]} />
                     </MapContainer>
                   </div>
