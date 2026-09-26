@@ -37,7 +37,6 @@ Finding suitable boarding places is often difficult for university students and 
 Users can search, filter, and inspect boarding listings with interactive maps, request bookings, chat directly with property owners, read and leave reviews, and even find compatible roommates. Landlords benefit from a dedicated management dashboard to oversee listings and booking requests in real time.
 
 
-
 ---
 
 ## Key Features

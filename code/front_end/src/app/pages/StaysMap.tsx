@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router'; // Changed from 'react-router-dom' to match your project
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon } from 'leaflet';
-import { Card } from '../components/ui/card';
-import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Fix for default marker icons not showing in React
-const customIcon = new Icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-    iconSize: [38, 38],
-    iconAnchor: [19, 38], // Anchors the tip of the icon to the coordinate
+// Fix for default marker icons in react-leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconUrl: markerIcon,
+    iconRetinaUrl: markerIcon2x,
+    shadowUrl: markerShadow,
 });
 
 import { API_BASE_URL } from '../../config';
@@ -85,15 +87,14 @@ export function StaysMap() {
                 style={{ height: '100%', width: '100%' }}
             >
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
+                    url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
                 />
 
                 {stays.filter((stay) => stay.latitude != null && stay.longitude != null && !isNaN(Number(stay.latitude)) && !isNaN(Number(stay.longitude))).map((stay) => (
                     <Marker
                         key={stay.stay_id}
                         position={[Number(stay.latitude), Number(stay.longitude)]}
-                        icon={customIcon}
                     >
                         <Popup>
                             <div className="p-2 min-w-[150px]">

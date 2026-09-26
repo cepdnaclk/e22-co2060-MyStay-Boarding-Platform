@@ -227,8 +227,8 @@ export function Browse() {
                     {(listing.latitude != null && listing.longitude != null && !isNaN(Number(listing.latitude)) && !isNaN(Number(listing.longitude))) ? (
                       <MapContainer center={[Number(listing.latitude), Number(listing.longitude)]} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }} zoomControl={false} dragging={false} scrollWheelZoom={false}>
                         <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
+                          url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
                         />
                         <Marker position={[Number(listing.latitude), Number(listing.longitude)]} />
                       </MapContainer>
