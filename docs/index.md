@@ -36,47 +36,48 @@ Finding suitable boarding places is often difficult for university students and 
 
 Users can search, filter, and inspect boarding listings with interactive maps, request bookings, chat directly with property owners, read and leave reviews, and even find compatible roommates. Landlords benefit from a dedicated management dashboard to oversee listings and booking requests in real time.
 
+
 ---
 
 ## Key Features
 
-### 1. 🔍 Advanced Stay Search & Multi-Criteria Filtering
+### 1. Advanced Stay Search & Multi-Criteria Filtering
 - Fast search across available boarding places filtered by **price range**, **distance/location**, **gender preference** (male, female, any), and **amenities** (Wi-Fi, attached bathroom, parking, meals, etc.).
 - Real-time availability indicator showing whether a place is Available or Booked.
 
-### 2. 🗺️ Interactive Map Exploration (Leaflet & CARTO Basemaps)
+### 2. Interactive Map Exploration (Leaflet & CARTO Basemaps)
 - Geospatial visualization of boarding locations on an interactive map.
 - Custom map pins, informative popups with stay summaries, pricing, and direct routing/directions to university landmarks.
 - High-reliability tile delivery using CARTO basemaps to prevent access blocking and rate limits.
 
-### 3. 👥 Roommate Finding Platform
+### 3. Roommate Finding Platform
 - Dedicated matchmaking system allowing students to create roommate profiles and post requests.
 - Filter prospective roommates by budget, preferred location, lifestyle habits, and gender preference.
 - Direct contact mechanism to connect and plan shared boarding arrangements.
 
-### 4. ⭐ Ratings & Verified Review System
+### 4. Ratings & Verified Review System
 - Transparent 5-star rating and written review system for authenticated tenants.
 - Aggregate ratings prominently displayed on listing cards and detail pages to assist prospective tenants in making confident decisions.
 
-### 5. 💬 In-App Direct Chat & Messaging
+### 5. In-App Direct Chat & Messaging
 - Built-in private messaging system connecting tenants directly with landlords.
 - Instant inquiry and landlord reply workflow across both desktop and mobile platforms.
 - Eliminates the need for external messaging apps while maintaining a secure audit trail.
 
-### 6. 📅 Booking Management & Automated Availability Lifecycle
+### 6. Booking Management & Automated Availability Lifecycle
 - Seamless booking request flow for tenants specifying move-in dates and notes.
 - Landlord approval workflow: landlords can review, accept, or decline booking requests.
 - Automatic availability synchronization: when a booking request is approved, the stay status dynamically updates to **Booked**.
 
-### 7. 📊 Dedicated Landlord Management Dashboard
+### 7. Dedicated Landlord Management Dashboard
 - Unified dashboard for property owners to create, update, manage photos, and delete listings.
 - Real-time monitoring of tenant inquiries, active bookings, and listing statuses.
 
-### 8. 📱 Cross-Platform Mobile Application
+### 8. Cross-Platform Mobile Application
 - Complementary **React Native (Expo)** mobile application supporting Android and iOS.
 - Allows students to browse listings, explore details, make direct phone calls with one click, and chat on the go.
 
-### 9. 📝 Integrated User Feedback System
+### 9. Integrated User Feedback System
 - Direct Google Forms feedback channel integrated into the platform for continuous user experience feedback and feature requests.
 
 ---
@@ -140,7 +141,9 @@ Future roadmap items include:
 
 ## Links
 
-- [Project Repository](https://github.com/cepdnaclk/e22-co2060-MyStay-Boarding-Platform){:target="_blank"}
-- [Project Page](https://cepdnaclk.github.io/e22-co2060-MyStay-Boarding-Platform){:target="_blank"}
+- [Project Repository](https://github.com/cepdnaclk/e22-co2060-MyStay-Boarding-Platform)
+- [Project Page](https://cepdnaclk.github.io/e22-co2060-MyStay-Boarding-Platform)
+- [MyStay Official Website](https://blue-wave-073e69e00.7.azurestaticapps.net)
 - [Department of Computer Engineering](http://www.ce.pdn.ac.lk/)
 - [University of Peradeniya](https://eng.pdn.ac.lk/)
+
